@@ -2,26 +2,35 @@
 #include <iostream>
 #include <bitset>
 
-Index::Index(size_t size) 
+sim::Index::Index(size_t size) 
     : _size{size}, data{new uint64_t[size]} {} 
 
-Index::~Index() {
+sim::Index::~Index() {
     delete[] data;
 }
 
-void Index::flip(size_t idx) {
+void sim::Index::flip(size_t idx) {
     data[idx/64] ^= 1ull << (idx%64); 
 }
 
-bool Index::is_one(size_t idx) const {
+bool sim::Index::is_one(size_t idx) const {
     return data[idx/64] & (1ull << (idx%64));
 }
 
-bool Index::is_zero(size_t idx) const {
+bool sim::Index::is_zero(size_t idx) const {
     return not (data[idx/64] & (1ull << (idx%64)));
 }
 
-size_t hash_value(const Index& idx) {
+
+uint64_t sim::Index::operator[](size_t idx) const {
+    return data[idx];
+}
+
+size_t sim::Index::size() const {
+    return _size;
+}
+
+size_t sim::hash_value(const Index& idx) {
     size_t aux = 0;
     boost::hash<uint64_t> ui64_hash;
     #pragma omp parallel for reduction(^:aux)
@@ -31,7 +40,7 @@ size_t hash_value(const Index& idx) {
     return aux;
 }
 
-bool operator==(const Index& a, const Index& b) {
+bool sim::operator==(const sim::Index& a, const sim::Index& b) {
     if (a.size() == b.size()) {
         for (auto i = 0; i < a.size(); i++) {
             if (a[i] != b[i]) {
@@ -44,7 +53,7 @@ bool operator==(const Index& a, const Index& b) {
     }
 }
 
-std::ostream& operator<<(std::ostream &os, const Index& idx) {
+std::ostream& operator<<(std::ostream &os, const sim::Index& idx) {
     for (auto i = 0; i < idx.size(); i++) {
         std::bitset<64> bits(idx[i]);
         os << bits;

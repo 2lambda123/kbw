@@ -1,7 +1,7 @@
 BASE = kbw
 
 SRC = $(wildcard src/*.cpp)
-OBJ = $(SRC:.cpp=.o)
+OBJ = $(SRC:.cpp=.o src/parser.o src/scanner.o)
 
 BISON = bison
 CXX = g++
@@ -19,8 +19,12 @@ all: $(BASE)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(BASE): $(OBJ)
+$(BASE): $(OBJ) src/parser.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
+$(OBJ): src/parser.hpp
+src/parser.o: src/parser.hpp
+src/scanner.o: src/parser.hpp
+
 clean:
-	rm -f $(OBJ) $(BASE)
+	rm -f $(OBJ) $(BASE) src/location.hh src/parser.cpp src/parser.hpp src/parser.output

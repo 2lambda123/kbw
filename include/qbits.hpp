@@ -6,7 +6,7 @@
 
 using namespace std::complex_literals;
 using complex = std::complex<double>;
-using map = boost::unordered_map<Index, complex>; 
+using map = boost::unordered_map<sim::Index, complex>; 
 
 class Qbits {
  public:

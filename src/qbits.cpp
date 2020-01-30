@@ -3,7 +3,7 @@
 
 Qbits::Qbits(size_t seed) {
     std::srand(seed);
-    qbits[Index()] = 1;
+    qbits[sim::Index()] = 1;
 }
 
 void Qbits::x(size_t idx) {
