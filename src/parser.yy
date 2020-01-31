@@ -8,6 +8,7 @@
 
 %code requires {
     #include <string>
+    #include <vector>
 
     class Driver;
 }
@@ -24,35 +25,42 @@
 
 %define api.token.prefix {TOK_}
 %token QUBIT     "qubit"
+       BIT       "bit"
+       DUMP      "dump"
        MEASURE   "measure"
        OPEN_KET  "|"
        CLOSE_KET ">"
+       EQ        "="
        ENDL      "end of line"
        EOF 0     "end of file"
        ;
 
-%token <std::string>  GATE
-%token <size_t> UINT
+%token <std::string>  GATE "gate"
+%token <size_t> ID        
+
+%nterm <size_t> Qbit
+%nterm <std::vector<size_t>> QbitList 
+
+%printer { yyo << $$; } <*>;
 
 %%
 Start : Operation ENDL Start
       | EOF
       ;
 
-Operation : "qubit" Qbit
-          | "measure" Qbit
-          | GATE List
+Operation : "qubit" Qbit          { drv.add_qubit($2);   }
+          | "bit" ID              { drv.add_bit($2);     }
+          | ID "=" "measure" Qbit { drv.measure($4, $1); }
+          | GATE QbitList         { drv.gate($1, $2);    }
+          | "dump"                { drv.dump(); }        
           ;
 
-List : Bit 
-     | Bit List
-     ;
+QbitList : Qbit          { $$.push_back($1); }
+         | Qbit QbitList { $$.push_back($1); $$.insert($$.end(), $2.begin(), $2.end()); }
+         ;
 
-Qbit : "|" UINT ">"
-
-Bit : Qbit
-    | UINT
-    ;
+Qbit : "|" ID ">"  { $$ = $2; }
+        ;
 
 %%
 

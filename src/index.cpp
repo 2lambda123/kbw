@@ -3,11 +3,7 @@
 #include <bitset>
 
 sim::Index::Index(size_t size) 
-    : _size{size}, data{new uint64_t[size]} {} 
-
-sim::Index::~Index() {
-    delete[] data;
-}
+    : _size{size}, data{2, 0} {} 
 
 void sim::Index::flip(size_t idx) {
     data[idx/64] ^= 1ull << (idx%64); 
@@ -54,8 +50,8 @@ bool sim::operator==(const sim::Index& a, const sim::Index& b) {
 }
 
 std::ostream& operator<<(std::ostream &os, const sim::Index& idx) {
-    for (auto i = 0; i < idx.size(); i++) {
-        std::bitset<64> bits(idx[i]);
+    for (size_t i = idx.size(); i > 0; --i) {
+        std::bitset<64> bits(idx[i-1]);
         os << bits;
     }
     return os;

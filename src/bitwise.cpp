@@ -1,12 +1,12 @@
-#include "../include/qbits.hpp"
+#include "../include/bitwise.hpp"
 #include <random>
 
-Qbits::Qbits(size_t seed) {
+Bitwise::Bitwise(size_t seed) {
     std::srand(seed);
     qbits[sim::Index()] = 1;
 }
 
-void Qbits::x(size_t idx) {
+void Bitwise::x(size_t idx) {
     map qbits_tmp{};
     for (auto &i : qbits) {
         auto j = i.first;
@@ -16,7 +16,7 @@ void Qbits::x(size_t idx) {
     qbits.swap(qbits_tmp);
 }
 
-void Qbits::y(size_t idx) {
+void Bitwise::y(size_t idx) {
     map qbits_tmp{};
     for (auto &i : qbits) {
         auto j = i.first;
@@ -30,7 +30,7 @@ void Qbits::y(size_t idx) {
     qbits.swap(qbits_tmp);
 }
 
-void Qbits::z(size_t idx) {
+void Bitwise::z(size_t idx) {
     for (auto &i : qbits) {
         if (i.first.is_one(idx)) {
             qbits[i.first] *= -1;
@@ -38,7 +38,7 @@ void Qbits::z(size_t idx) {
     }
 }
 
-void Qbits::h(size_t idx) {
+void Bitwise::h(size_t idx) {
     map qbits_tmp{};
     for (auto &i : qbits) {
         if (i.first.is_one(idx)) {
@@ -59,7 +59,7 @@ void Qbits::h(size_t idx) {
     qbits.swap(qbits_tmp);
 }
 
-void Qbits::s(size_t idx) {
+void Bitwise::s(size_t idx) {
     for (auto &i : qbits) {
         if (i.first.is_one(idx)) {
             qbits[i.first] *= 1i;
@@ -67,7 +67,7 @@ void Qbits::s(size_t idx) {
     }
 }
 
-void Qbits::sd(size_t idx) {
+void Bitwise::sd(size_t idx) {
     for (auto &i : qbits) {
         if (i.first.is_one(idx)) {
             qbits[i.first] *= -1i;
@@ -75,7 +75,7 @@ void Qbits::sd(size_t idx) {
     }
 }
 
-void Qbits::t(size_t idx) {
+void Bitwise::t(size_t idx) {
     for (auto &i : qbits) {
         if (i.first.is_one(idx)) {
             qbits[i.first] *= std::exp(1i*M_PI);
@@ -83,7 +83,7 @@ void Qbits::t(size_t idx) {
     }
 }
 
-void Qbits::td(size_t idx) {
+void Bitwise::td(size_t idx) {
     for (auto &i : qbits) {
         if (i.first.is_one(idx)) {
             qbits[i.first] *= std::exp(-1i*M_PI);
@@ -91,7 +91,7 @@ void Qbits::td(size_t idx) {
     }
 }
 
-void Qbits::cnot(size_t ctrl, size_t target) {
+void Bitwise::cnot(size_t ctrl, size_t target) {
     map qbits_tmp{};
 
     for (auto &i : qbits) {
@@ -105,7 +105,7 @@ void Qbits::cnot(size_t ctrl, size_t target) {
     qbits.swap(qbits_tmp);
 }
 
-int Qbits::measure(size_t idx) {
+int Bitwise::measure(size_t idx) {
     double p = 0;
 
     for (auto &i : qbits) {
@@ -132,8 +132,8 @@ int Qbits::measure(size_t idx) {
     return result;
 }
 
-std::ostream& operator<<(std::ostream &os, Qbits q) {
-    for (auto &i : q.qbits) {
+std::ostream& operator<<(std::ostream &os, const Bitwise& q) {
+    for (const auto &i : q.qbits) {
         os << i.first << ' ' << i.second << std::endl;
     }
     return os;

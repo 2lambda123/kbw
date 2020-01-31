@@ -8,9 +8,9 @@ using namespace std::complex_literals;
 using complex = std::complex<double>;
 using map = boost::unordered_map<sim::Index, complex>; 
 
-class Qbits {
+class Bitwise {
  public:
-    Qbits(size_t seed = 42);
+    Bitwise(size_t seed = 42);
 
     void x(size_t idx);
     void y(size_t idx);
@@ -26,5 +26,5 @@ class Qbits {
  private:
     map qbits;
 
-    friend std::ostream& operator<<(std::ostream &os, Qbits q);
+    friend std::ostream& operator<<(std::ostream &os, const Bitwise& q);
 };

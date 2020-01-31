@@ -7,6 +7,8 @@ BISON = bison
 CXX = g++
 FLEX = flex
 BISONFLAGS = -v
+CXXFLAGS = -g
+CXXLINK = -lboost_program_options
 
 all: $(BASE)
 
@@ -20,7 +22,7 @@ all: $(BASE)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(BASE): $(OBJ) src/parser.o
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) $(CXXLINK) -o $@ $^
 
 $(OBJ): src/parser.hpp
 src/parser.o: src/parser.hpp
