@@ -51,5 +51,5 @@ void Driver::measure(size_t qubit, size_t bit) {
 }
 
 void Driver::dump() {
-    std::cout << "<<<" << std::endl << simulator << "<<<" << std::endl ;
+    std::cout << ">>>" << std::endl << simulator << "<<<" << std::endl ;
 }

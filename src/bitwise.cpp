@@ -99,6 +99,8 @@ void Bitwise::cnot(size_t ctrl, size_t target) {
             auto j = i.first;
             j.flip(target);
             qbits_tmp[j] = i.second; 
+        } else {
+            qbits_tmp[i.first] = i.second; 
         }
     }
 

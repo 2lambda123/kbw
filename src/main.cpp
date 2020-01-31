@@ -2,6 +2,7 @@
 #include <boost/program_options.hpp>
 
 int main(int argc, char* argv[]) {
+
     size_t seed = 42;
 
     try {

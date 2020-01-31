@@ -2,9 +2,6 @@
 #include <iostream>
 #include <bitset>
 
-sim::Index::Index(size_t size) 
-    : _size{size}, data{2, 0} {} 
-
 void sim::Index::flip(size_t idx) {
     data[idx/64] ^= 1ull << (idx%64); 
 }
