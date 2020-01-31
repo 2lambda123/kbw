@@ -5,3 +5,4 @@ src/parser.output
 src/parser.cpp
 kbw
 out.qasm
+.vscode/launch.json
