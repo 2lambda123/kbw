@@ -28,5 +28,9 @@ $(OBJ): src/parser.hpp
 src/parser.o: src/parser.hpp
 src/scanner.o: src/parser.hpp
 
+install: $(BASE)
+	cp $(BASE) ~/bin
+
+
 clean:
 	rm -f $(OBJ) $(BASE) src/location.hh src/parser.cpp src/parser.hpp src/parser.output

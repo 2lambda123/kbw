@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
     try {
         boost::program_options::options_description desc{"Options"};
         desc.add_options()
-            ("help,h", "Show this")
+            ("help,h", "Show this informations")
             ("seed,s", boost::program_options::value<size_t>()->default_value(42), "Pseudo random number generator seed");
         boost::program_options::variables_map vm;
         boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);

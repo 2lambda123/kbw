@@ -50,6 +50,10 @@ void Driver::measure(size_t qubit, size_t bit) {
     measurements[bit_map[bit]] = result;
 }
 
+bool Driver::get_measure(size_t bit) {
+    return measurements[bit_map[bit]];
+}
+
 void Driver::dump() {
     std::cout << ">>>" << std::endl << simulator << "<<<" << std::endl ;
 }

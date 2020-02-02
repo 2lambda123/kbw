@@ -26,6 +26,7 @@
 %define api.token.prefix {TOK_}
 %token QUBIT     "qubit"
        BIT       "bit"
+       IF        "if"
        DUMP      "dump"
        MEASURE   "measure"
        OPEN_KET  "|"
@@ -40,6 +41,7 @@
 
 %nterm <size_t> Qbit
 %nterm <std::vector<size_t>> QbitList 
+%nterm <bool> BitList 
 
 %printer { yyo << $$; } <*>;
 
@@ -48,16 +50,21 @@ Start : Operation ENDL Start
       | EOF
       ;
 
-Operation : "qubit" Qbit          { drv.add_qubit($2);   }
-          | "bit" ID              { drv.add_bit($2);     }
-          | ID "=" "measure" Qbit { drv.measure($4, $1); }
-          | GATE QbitList         { drv.gate($1, $2);    }
-          | "dump"                { drv.dump(); }        
+Operation : "qubit" Qbit                { drv.add_qubit($2);        }
+          | "bit" ID                    { drv.add_bit($2);          }
+          | ID "=" "measure" Qbit       { drv.measure($4, $1);      }
+          | GATE QbitList               { drv.gate($1, $2);         }
+          | "if" BitList GATE QbitList  { if ($2) drv.gate($3, $4); }
+          | "dump"                      { drv.dump();               }        
           ;
 
 QbitList : Qbit          { $$.push_back($1); }
          | Qbit QbitList { $$.push_back($1); $$.insert($$.end(), $2.begin(), $2.end()); }
          ;
+
+BitList : ID         { $$ = drv.get_measure($1);        }
+        | ID BitList { $$ = drv.get_measure($1) and $2; }
+        ; 
 
 Qbit : "|" ID ">"  { $$ = $2; }
         ;

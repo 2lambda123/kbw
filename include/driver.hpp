@@ -21,6 +21,8 @@ class Driver {
 
    void measure(size_t qubit, size_t bit);
 
+   bool get_measure(size_t bit);
+
    void dump();
 
    int parse();
