@@ -9,6 +9,7 @@
 %code requires {
     #include <string>
     #include <vector>
+    #include <functional>
 
     class Driver;
 }
@@ -27,6 +28,7 @@
 %token QUBIT     "qubit"
        BIT       "bit"
        IF        "if"
+       CTRL      "ctrl"
        DUMP      "dump"
        MEASURE   "measure"
        OPEN_KET  "|"
@@ -50,12 +52,14 @@ Start : Operation ENDL Start
       | EOF
       ;
 
-Operation : "qubit" Qbit                { drv.add_qubit($2);        }
-          | "bit" ID                    { drv.add_bit($2);          }
-          | ID "=" "measure" Qbit       { drv.measure($4, $1);      }
-          | GATE QbitList               { drv.gate($1, $2);         }
-          | "if" BitList GATE QbitList  { if ($2) drv.gate($3, $4); }
-          | "dump"                      { drv.dump();               }        
+Operation : "qubit" Qbit                               { drv.add_qubit($2);            }
+          | "bit" ID                                   { drv.add_bit($2);              }
+          | ID "=" "measure" Qbit                      { drv.measure($4, $1);          }
+          | GATE QbitList                              { drv.gate($1, $2);             }
+          | "ctrl" QbitList GATE QbitList              { drv.gate($3, $4, $2);         }
+          | "if" BitList GATE QbitList                 { if ($2) drv.gate($3, $4);     }
+          | "if" BitList "ctrl" QbitList GATE QbitList { if ($2) drv.gate($5, $6, $4); }
+          | "dump"                                     { drv.dump();                   }        
           ;
 
 QbitList : Qbit          { $$.push_back($1); }

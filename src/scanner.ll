@@ -30,6 +30,7 @@ bit      return yy::parser::make_BIT(loc);
 measure  return yy::parser::make_MEASURE(loc);
 dump     return yy::parser::make_DUMP(loc);
 if       return yy::parser::make_IF(loc);
+ctrl     return yy::parser::make_CTRL(loc);
 
 \|       return yy::parser::make_OPEN_KET(loc);
 >        return yy::parser::make_CLOSE_KET(loc);

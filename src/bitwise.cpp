@@ -6,96 +6,127 @@ Bitwise::Bitwise(size_t seed) {
     qbits[sim::Index()] = 1;
 }
 
-void Bitwise::x(size_t idx) {
+void Bitwise::x(size_t idx, const ctrl_list& ctrl) {
     map qbits_tmp{};
     for (auto &i : qbits) {
-        auto j = i.first;
-        j.flip(idx);
-        qbits_tmp[j] = i.second; 
-    }
-    qbits.swap(qbits_tmp);
-}
-
-void Bitwise::y(size_t idx) {
-    map qbits_tmp{};
-    for (auto &i : qbits) {
-        auto j = i.first;
-        j.flip(idx);
-        if (i.first.is_one(idx)) {
-            qbits_tmp[j] = i.second*-1i;
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec) {
+            auto j = i.first;
+            j.flip(idx);
+            qbits_tmp[j] = i.second; 
         } else {
-            qbits_tmp[j] = i.second*1i;
+            qbits_tmp[i.first] = i.second; 
         }
     }
     qbits.swap(qbits_tmp);
 }
 
-void Bitwise::z(size_t idx) {
+void Bitwise::y(size_t idx, const ctrl_list& ctrl) {
+    map qbits_tmp{};
     for (auto &i : qbits) {
-        if (i.first.is_one(idx)) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec) {
+            auto j = i.first;
+            j.flip(idx);
+            if (i.first.is_one(idx)) {
+                qbits_tmp[j] = i.second*-1i;
+            } else {
+                qbits_tmp[j] = i.second*1i;
+            }
+        } else {
+            qbits_tmp[i.first] = i.second; 
+        }
+    }
+    qbits.swap(qbits_tmp);
+}
+
+void Bitwise::z(size_t idx, const ctrl_list& ctrl) {
+    for (auto &i : qbits) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec and i.first.is_one(idx)) {
             qbits[i.first] *= -1;
         }
     }
 }
 
-void Bitwise::h(size_t idx) {
+void Bitwise::h(size_t idx, const ctrl_list& ctrl) {
     map qbits_tmp{};
     for (auto &i : qbits) {
-        if (i.first.is_one(idx)) {
-            qbits_tmp[i.first] -= i.second/std::sqrt(2);
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec) {
+            if (i.first.is_one(idx)) {
+                qbits_tmp[i.first] -= i.second/std::sqrt(2);
+            } else {
+                qbits_tmp[i.first] += i.second/std::sqrt(2);
+            }
+            if (std::abs(qbits_tmp[i.first]) < 1e-10) {
+                qbits_tmp.erase(i.first);
+            }
+            auto j = i.first;
+            j.flip(idx);
+            qbits_tmp[j] += i.second/std::sqrt(2);
+            if (std::abs(qbits_tmp[j]) < 1e-10) {
+                qbits_tmp.erase(j);
+            }
         } else {
-            qbits_tmp[i.first] += i.second/std::sqrt(2);
+            qbits_tmp[i.first] = i.second; 
         }
-        if (std::abs(qbits_tmp[i.first]) < 1e-10) {
-            qbits_tmp.erase(i.first);
-        }
-        auto j = i.first;
-        j.flip(idx);
-        qbits_tmp[j] += i.second/std::sqrt(2);
-        if (std::abs(qbits_tmp[j]) < 1e-10) {
-            qbits_tmp.erase(j);
-        }
+
     }
     qbits.swap(qbits_tmp);
 }
 
-void Bitwise::s(size_t idx) {
+void Bitwise::s(size_t idx, const ctrl_list& ctrl) {
     for (auto &i : qbits) {
-        if (i.first.is_one(idx)) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec and i.first.is_one(idx)) {
             qbits[i.first] *= 1i;
         }
     }
 }
 
-void Bitwise::sd(size_t idx) {
+void Bitwise::sd(size_t idx, const ctrl_list& ctrl) {
     for (auto &i : qbits) {
-        if (i.first.is_one(idx)) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec and i.first.is_one(idx)) {
             qbits[i.first] *= -1i;
         }
     }
 }
 
-void Bitwise::t(size_t idx) {
+void Bitwise::t(size_t idx, const ctrl_list& ctrl) {
     for (auto &i : qbits) {
-        if (i.first.is_one(idx)) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec and i.first.is_one(idx)) {
             qbits[i.first] *= std::exp(1i*M_PI);
         }
     }
 }
 
-void Bitwise::td(size_t idx) {
+void Bitwise::td(size_t idx, const ctrl_list& ctrl) {
     for (auto &i : qbits) {
-        if (i.first.is_one(idx)) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec and i.first.is_one(idx)) {
             qbits[i.first] *= std::exp(-1i*M_PI);
         }
     }
 }
 
-void Bitwise::cnot(size_t ctrl, size_t target) {
+void Bitwise::cnot(size_t ctrl, size_t target,  const ctrl_list& ctrl2) {
     map qbits_tmp{};
 
     for (auto &i : qbits) {
-        if (i.first.is_one(ctrl)) {
+        bool exec = true;
+        for (auto j : ctrl2) exec &= i.first.is_one(j);
+        if (exec and i.first.is_one(ctrl)) {
             auto j = i.first;
             j.flip(target);
             qbits_tmp[j] = i.second; 
