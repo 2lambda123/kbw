@@ -31,6 +31,7 @@ measure  return yy::parser::make_MEASURE(loc);
 dump     return yy::parser::make_DUMP(loc);
 if       return yy::parser::make_IF(loc);
 ctrl     return yy::parser::make_CTRL(loc);
+adj      return yy::parser::make_ADJ(loc);
 
 \|       return yy::parser::make_OPEN_KET(loc);
 >        return yy::parser::make_CLOSE_KET(loc);
