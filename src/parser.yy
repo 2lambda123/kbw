@@ -31,6 +31,9 @@
        CTRL      "ctrl"
        ADJ       "adj"
        DUMP      "dump"
+       DIRTY     "dirty"
+       FREEDIRTY "freedirty"
+       FREE      "free"
        MEASURE   "measure"
        OPEN_KET  "|"
        CLOSE_KET ">"
@@ -56,7 +59,10 @@ Start : Operation ENDL Start
       ;
 
 Operation : "qubit" Qbit          { drv.add_qubit($2);   }
+          | "qubit" "dirty" Qbit  { drv.add_dirty($3);   }
           | "bit" ID              { drv.add_bit($2);     }
+          | "free" Qbit           { drv.free($2);        }
+          | "freedirty" Qbit      { drv.freedirty($2);   }
           | ID "=" "measure" Qbit { drv.measure($4, $1); }
           | "if" BitList CtrlGate { if ($2) drv.gate(std::get<0>($3), std::get<1>($3), std::get<2>($3), std::get<3>($3)); }
           | CtrlGate              { drv.gate(std::get<0>($1), std::get<1>($1), std::get<2>($1), std::get<3>($1));         }

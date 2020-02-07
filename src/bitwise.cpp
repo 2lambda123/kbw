@@ -157,7 +157,13 @@ int Bitwise::measure(size_t idx) {
 
     for (auto &i : qbits) {
         if (i.first.is_zero(idx) xor result) {
-            qbits_tmp[i.first] = i.second/p;
+            if (result == 0) {
+                qbits_tmp[i.first] = i.second/p;
+            } else {
+                auto j = i.first;
+                j.flip(idx);
+                qbits_tmp[j] = i.second/p;
+            }
         }
     }
 

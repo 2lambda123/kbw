@@ -2,12 +2,25 @@
 #include <iostream>
 
 Driver::Driver(size_t seed) 
-    : simulator{seed}, quantum_counter{0}, classic_counter{0} {}
+    : simulator{seed}, classic_counter{0}
+{
+    for (int i = 0; i < 128; i++) clean_qubits.push_back(i);
+}
 
 void Driver::add_qubit(size_t qubit) {
-    qubit_map[qubit] = quantum_counter;
-    quantum_counter++;
+    qubit_map[qubit] = clean_qubits.back();
+    clean_qubits.pop_back();
 }
+
+void Driver::add_dirty(size_t qubit) {
+    if (not dirty_qubits.empty()) {
+        qubit_map[qubit] = dirty_qubits.back();
+        dirty_qubits.pop_back();
+    } else {
+        qubit_map[qubit] = clean_qubits.back();
+        clean_qubits.pop_back();
+    }
+}   
 
 size_t Driver::get_qubit(size_t qubit) {
     return qubit_map[qubit];
@@ -58,10 +71,22 @@ void Driver::measure(size_t qubit, size_t bit) {
     int result = simulator.measure(qubit_map[qubit]);
     std::cout << bit << " " << result << std::endl;
     measurements[bit_map[bit]] = result;
+    clean_qubits.push_back(qubit_map[qubit]);
+    qubit_map.erase(qubit);
 }
 
 bool Driver::get_measure(size_t bit) {
     return measurements[bit_map[bit]];
+}
+
+void Driver::free(size_t qubit) {
+    clean_qubits.push_back(qubit_map[qubit]);
+    qubit_map.erase(qubit);
+}
+
+void Driver::freedirty(size_t qubit) {
+    dirty_qubits.push_back(qubit_map[qubit]);
+    qubit_map.erase(qubit);
 }
 
 void Driver::dump() {
