@@ -35,7 +35,7 @@ size_t Driver::get_bit(size_t bit) {
     return bit_map[bit];
 }
 
-void Driver::gate(const std::string& gate, const std::vector<size_t>& qubits, bool adj, const std::vector<size_t>& ctrl) {
+void Driver::gate(const std::string& gate, const std::vector<size_t>& qubits, const std::vector<double>& args, bool adj, const std::vector<size_t>& ctrl) {
     std::vector<size_t> mapped_ctrl;
     for (auto i : ctrl) mapped_ctrl.push_back(qubit_map[i]);
     if (gate == "x") {
@@ -64,7 +64,17 @@ void Driver::gate(const std::string& gate, const std::vector<size_t>& qubits, bo
         simulator.t(qubit_map[qubits[0]], mapped_ctrl);
     } else if (gate == "cnot") {
         simulator.cnot(qubit_map[qubits[0]], qubit_map[qubits[1]], mapped_ctrl);
-    } 
+    } else if (gate == "u1") {
+        simulator.u1(args[0], qubit_map[qubits[0]], mapped_ctrl);
+    } else if (gate == "u2" and not adj) {
+        simulator.u2(args[0], args[1], qubit_map[qubits[0]], mapped_ctrl);
+    } else if (gate == "u2" and adj) {
+        simulator.u2(-args[1]-M_PI, -args[0]+M_PI, qubit_map[qubits[0]], mapped_ctrl);
+    } else if (gate == "u3" and not adj) {
+        simulator.u3(args[0], args[1], args[2], qubit_map[qubits[0]], mapped_ctrl);
+    } else if (gate == "u3" and adj) {
+        simulator.u3(-args[0], args[2], args[1], qubit_map[qubits[0]], mapped_ctrl);
+    }
 }
 
 void Driver::measure(size_t qubit, size_t bit) {

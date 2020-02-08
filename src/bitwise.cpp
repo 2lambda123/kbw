@@ -138,6 +138,85 @@ void Bitwise::cnot(size_t ctrl, size_t target,  const ctrl_list& ctrl2) {
     qbits.swap(qbits_tmp);
 }
 
+void Bitwise::u1(double lambda, size_t idx, const ctrl_list& ctrl) {
+    for (auto &i : qbits) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec and i.first.is_one(idx)) {
+            qbits[i.first] *= std::exp(1i*lambda);
+        }
+    }
+}
+
+void Bitwise::u2(double phi, double lambda, size_t idx, const ctrl_list& ctrl) {
+    map qbits_tmp{};
+    for (auto &i : qbits) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec) {
+            auto j = i.first;
+            j.flip(idx);
+            if (i.first.is_one(idx)) {
+                qbits_tmp[i.first] += i.second*std::exp(1i*(lambda+phi))/std::sqrt(2);
+                if (std::abs(qbits_tmp[i.first]) < 1e-10)
+                    qbits_tmp.erase(i.first);
+                
+                qbits_tmp[j] -= i.second*std::exp(1i*lambda)/std::sqrt(2);
+                if (std::abs(qbits_tmp[j]) < 1e-10)
+                    qbits_tmp.erase(j);
+            } else {
+                qbits_tmp[i.first] += i.second/sqrt(2);
+                if (std::abs(qbits_tmp[i.first]) < 1e-10)
+                    qbits_tmp.erase(i.first);
+                
+                qbits_tmp[j] += i.second*std::exp(1i*phi)/std::sqrt(2);
+                if (std::abs(qbits_tmp[j]) < 1e-10)
+                    qbits_tmp.erase(j);
+            }
+
+        } else {
+            qbits_tmp[i.first] = i.second;
+        }
+    }
+
+    qbits.swap(qbits_tmp);
+} 
+
+void Bitwise::u3(double theta, double phi, double lambda, size_t idx, const ctrl_list& ctrl) {
+    map qbits_tmp{};
+
+    for (auto &i : qbits) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec) {
+            auto j = i.first;
+            j.flip(idx);
+            if (i.first.is_one(idx)) {
+                qbits_tmp[i.first] += i.second*std::exp(1i*(lambda+phi))*std::cos(theta/2);
+                if (std::abs(qbits_tmp[i.first]) < 1e-10)
+                    qbits_tmp.erase(i.first);
+                
+                qbits_tmp[j] -= i.second*std::exp(1i*lambda)/std::sin(theta/2);
+                if (std::abs(qbits_tmp[j]) < 1e-10)
+                    qbits_tmp.erase(j);
+            } else {
+                qbits_tmp[i.first] += i.second*std::cos(theta/2);
+                if (std::abs(qbits_tmp[i.first]) < 1e-10)
+                    qbits_tmp.erase(i.first);
+
+                qbits_tmp[j] += i.second*std::exp(1i*phi)*std::sin(theta/2);
+                if (std::abs(qbits_tmp[j]) < 1e-10)
+                    qbits_tmp.erase(j);
+            }
+        } else {
+            qbits_tmp[i.first] = i.second;
+        }
+    }
+
+    qbits.swap(qbits_tmp);
+}
+
+
 int Bitwise::measure(size_t idx) {
     double p = 0;
 

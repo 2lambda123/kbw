@@ -23,6 +23,9 @@ class Bitwise {
     void t(size_t idx, const ctrl_list& ctrl = {});
     void td(size_t idx, const ctrl_list& ctrl = {});
     void cnot(size_t ctrl, size_t target, const ctrl_list& ctrl2 = {});
+    void u1(double lambda, size_t idx, const ctrl_list& ctrl={});
+    void u2(double phi, double lambda, size_t idx, const ctrl_list& ctrl={});
+    void u3(double theta, double phi, double lambda, size_t idx, const ctrl_list& ctrl={});
     int measure(size_t idx);
 
  private:

@@ -26,7 +26,6 @@ size_t sim::Index::size() const {
 size_t sim::hash_value(const Index& idx) {
     size_t aux = 0;
     boost::hash<uint64_t> ui64_hash;
-    #pragma omp parallel for reduction(^:aux)
     for (size_t i = 0; i < idx.size(); i++) {
         aux ^= ui64_hash(idx[i]);
     }
@@ -35,7 +34,7 @@ size_t sim::hash_value(const Index& idx) {
 
 bool sim::operator==(const sim::Index& a, const sim::Index& b) {
     if (a.size() == b.size()) {
-        for (auto i = 0; i < a.size(); i++) {
+        for (size_t i = 0; i < a.size(); i++) {
             if (a[i] != b[i]) {
                 return false;
             }

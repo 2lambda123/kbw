@@ -7,8 +7,9 @@
 
 %option noyywrap nounput noinput batch
 
-GATE [_\.a-zA-Z][_\.a-zA-Z_0-9]*
-ID   [0-9]+
+GATE   [_\.a-zA-Z][_\.a-zA-Z_0-9]*
+DOUBLE -?[0-9]+\.[0-9]+
+ID     [0-9]+
 
 %{
     #define YY_USER_ACTION  loc.columns(yyleng);
@@ -33,15 +34,17 @@ if        return yy::parser::make_IF(loc);
 ctrl      return yy::parser::make_CTRL(loc);
 adj       return yy::parser::make_ADJ(loc);
 dirty     return yy::parser::make_DIRTY(loc);
-freedirty return yy::parser::make_FREEDIRTY(loc);
 free      return yy::parser::make_FREE(loc);
 
 \|        return yy::parser::make_OPEN_KET(loc);
 >         return yy::parser::make_CLOSE_KET(loc);
 =         return yy::parser::make_EQ(loc);
+\(         return yy::parser::make_OPEN_P(loc);
+\)         return yy::parser::make_CLOSE_P(loc);
 
 {ID}      return yy::parser::make_ID(std::stoll(yytext), loc);
 {GATE}    return yy::parser::make_GATE(yytext, loc);
+{DOUBLE}  return yy::parser::make_DOUBLE(std::stod(yytext), loc);
 
 .         throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
          
@@ -53,6 +56,7 @@ int Driver::parse() {
     location.initialize();
 
     yyin = stdin;
+    //yyin = fopen("out.qasm", "r");
     yy::parser parse(*this);
 
     return parse();

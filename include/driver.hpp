@@ -2,6 +2,7 @@
 #include "../src/parser.hpp"
 #include "bitwise.hpp"
 #include <vector>
+#include <complex>
 #include <boost/unordered_map.hpp>
 
 # define YY_DECL yy::parser::symbol_type yylex(Driver& drv)
@@ -19,7 +20,7 @@ class Driver {
    void add_bit(size_t bit);
    size_t get_bit(size_t bit);
 
-   void gate(const std::string& gate, const std::vector<size_t>& qubits, bool adj=false, const std::vector<size_t>& ctrl={});
+   void gate(const std::string& gate, const std::vector<size_t>& qubits, const std::vector<double>& args, bool adj, const std::vector<size_t>& ctrl);
 
    void measure(size_t qubit, size_t bit);
    void free(size_t qubit);
