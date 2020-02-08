@@ -7,7 +7,7 @@ BISON = bison
 CXX = g++
 FLEX = flex
 BISONFLAGS = -v
-CXXFLAGS = -g
+CXXFLAGS = -g -Wall -Werror
 CXXLINK = -lboost_program_options
 
 all: $(BASE)
