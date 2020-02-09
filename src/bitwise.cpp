@@ -105,7 +105,7 @@ void Bitwise::t(size_t idx, const ctrl_list& ctrl) {
         bool exec = true;
         for (auto j : ctrl) exec &= i.first.is_one(j);
         if (exec and i.first.is_one(idx)) {
-            qbits[i.first] *= std::exp(1i*M_PI);
+            qbits[i.first] *= std::exp(1i*M_PI/4.0);
         }
     }
 }
@@ -115,7 +115,7 @@ void Bitwise::td(size_t idx, const ctrl_list& ctrl) {
         bool exec = true;
         for (auto j : ctrl) exec &= i.first.is_one(j);
         if (exec and i.first.is_one(idx)) {
-            qbits[i.first] *= std::exp(-1i*M_PI);
+            qbits[i.first] *= std::exp(-1i*M_PI/4.0);
         }
     }
 }
