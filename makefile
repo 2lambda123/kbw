@@ -8,7 +8,7 @@ CXX = g++
 FLEX = flex
 BISONFLAGS = -v
 CXXFLAGS = -g -Wall -Werror
-CXXLINK = -lboost_program_options
+CXXLINK = -lboost_program_options -lboost_serialization
 
 all: $(BASE)
 
