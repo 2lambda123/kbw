@@ -8,9 +8,13 @@ namespace sim {
       void flip(size_t idx);
       bool is_one(size_t idx) const;
       bool is_zero(size_t idx) const;
+      size_t get_first(size_t size) const;
+      void set_first(size_t y, size_t size);
 
       uint64_t operator[](size_t idx) const;
       size_t size() const;
+
+      bool operator<(const Index& other) const;
 
    private:
       

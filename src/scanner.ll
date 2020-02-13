@@ -7,7 +7,8 @@
 
 %option noyywrap nounput noinput batch
 
-GATE   [_\.a-zA-Z][_\.a-zA-Z_0-9]*
+GATE   [_a-z][_\.a-zA-Z_0-9]*
+ORACLE \"[\x20-\x7e]+\" 
 DOUBLE -?[0-9]+\.[0-9]+
 ID     [0-9]+
 
@@ -39,11 +40,12 @@ free      return yy::parser::make_FREE(loc);
 \|        return yy::parser::make_OPEN_KET(loc);
 >         return yy::parser::make_CLOSE_KET(loc);
 =         return yy::parser::make_EQ(loc);
-\(         return yy::parser::make_OPEN_P(loc);
-\)         return yy::parser::make_CLOSE_P(loc);
+\(        return yy::parser::make_OPEN_P(loc);
+\)        return yy::parser::make_CLOSE_P(loc);
 
 {ID}      return yy::parser::make_ID(std::stoll(yytext), loc);
 {GATE}    return yy::parser::make_GATE(yytext, loc);
+{ORACLE}  return yy::parser::make_GATE(yytext, loc);
 {DOUBLE}  return yy::parser::make_DOUBLE(std::stod(yytext), loc);
 
 .         throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext));

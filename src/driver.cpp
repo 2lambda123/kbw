@@ -1,10 +1,14 @@
 #include "../include/driver.hpp"
 #include <iostream>
+#include <boost/serialization/boost_unordered_map.hpp>
+#include <boost/serialization/boost_unordered_set.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/complex.hpp>
 
 Driver::Driver(size_t seed) 
     : simulator{seed}, classic_counter{0}
 {
-    for (int i = 0; i < 128; i++) clean_qubits.push_back(i);
+    for (int i = 128; i > 0; i--) clean_qubits.push_back(i-1);
 }
 
 void Driver::add_qubit(size_t qubit) {
@@ -36,6 +40,23 @@ size_t Driver::get_bit(size_t bit) {
 }
 
 void Driver::gate(const std::string& gate, const std::vector<size_t>& qubits, const std::vector<double>& args, bool adj, const std::vector<size_t>& ctrl) {
+    if (gate[0] == '\"') {
+        std::stringstream file{gate.substr(1, gate.size()-2)};
+        boost::archive::text_iarchive iarch(file);
+        gate_map gm;
+        iarch >> gm; 
+        std::vector<size_t> mapped_qubits;
+        for (auto i : qubits) mapped_qubits.push_back(qubit_map[i]);
+        for (size_t i = 0; i < qubits.size(); i++) 
+            simulator.swap(i, mapped_qubits[i]);
+        
+        simulator.oracle(gm, mapped_qubits.size());
+
+        for (size_t i = 0; i < qubits.size(); i++) 
+            simulator.swap(i, mapped_qubits[i]);
+
+        return;
+    }
     std::vector<size_t> mapped_ctrl;
     for (auto i : ctrl) mapped_ctrl.push_back(qubit_map[i]);
     if (gate == "x") {

@@ -23,6 +23,23 @@ size_t sim::Index::size() const {
     return _size;
 }
 
+size_t sim::Index::get_first(size_t size) const {
+    return data[0] & ((1ul << size)-1);
+}
+
+void sim::Index::set_first(size_t y, size_t size) {
+    data[0] &= (((1ul << (64-size))-1) << size);
+    data[0] |= y;
+}
+
+bool sim::Index::operator<(const Index& other) const {
+    for (size_t i = 0; i < size(); i++) {
+        if (data[i] < other.data[i]) return true;
+        else if (data[i] > other.data[i]) return false;
+    }
+    return false;
+}
+
 size_t sim::hash_value(const Index& idx) {
     size_t aux = 0;
     boost::hash<uint64_t> ui64_hash;

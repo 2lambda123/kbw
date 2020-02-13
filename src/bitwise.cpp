@@ -1,4 +1,5 @@
 #include "../include/bitwise.hpp"
+#include <boost/container/map.hpp>
 #include <random>
 
 Bitwise::Bitwise(size_t seed) {
@@ -250,8 +251,41 @@ int Bitwise::measure(size_t idx) {
     return result;
 }
 
+void Bitwise::oracle(gate_map& gate, size_t size) {
+    map qbits_tmp{};
+    for (auto &i : qbits) {
+        auto &set = gate[i.first.get_first(size)];
+        for (auto &j : set) {
+            auto y = i.first;
+            y.set_first(j.second, size);
+            qbits_tmp[y] += i.second*j.first;
+            if (std::abs(qbits_tmp[y]) < 1e-10)
+                qbits_tmp.erase(y);
+
+        }
+    }
+    qbits.swap(qbits_tmp);
+}
+
+void Bitwise::swap(size_t a, size_t b) {
+    map qbits_tmp{};
+    for (auto &i : qbits) {
+        if (i.first.is_one(a) != i.first.is_one(b)) {
+            auto j = i.first;
+            j.flip(a);
+            j.flip(b);
+            qbits_tmp[j] = i.second;
+        } else {
+            qbits_tmp[i.first] = i.second;
+        }
+    }
+    qbits.swap(qbits_tmp);
+}
+
 std::ostream& operator<<(std::ostream &os, const Bitwise& q) {
-    for (const auto &i : q.qbits) {
+    boost::container::map<sim::Index, complex> sorted;
+    sorted.insert(q.qbits.begin(), q.qbits.end());
+    for (auto &i : sorted) {
         os << i.first << ' ' << i.second << std::endl;
     }
     return os;
