@@ -12,14 +12,14 @@ namespace sim {
       void set_first(size_t y, size_t size);
 
       uint64_t operator[](size_t idx) const;
-      size_t size() const;
 
       bool operator<(const Index& other) const;
 
+      const static size_t size = 2;
+
    private:
       
-      const static size_t _size = 2;
-      std::array<uint64_t, _size> data;
+      std::array<uint64_t, size> data;
    };
 
    size_t hash_value(const Index& idx);

@@ -8,7 +8,7 @@
 Driver::Driver(size_t seed) 
     : simulator{seed}, classic_counter{0}
 {
-    for (int i = 128; i > 0; i--) clean_qubits.push_back(i-1);
+    for (size_t i = 0; i < 64*sim::Index::size; i++) clean_qubits.push_back(i);
 }
 
 void Driver::add_qubit(size_t qubit) {
@@ -46,7 +46,7 @@ void Driver::gate(const std::string& gate, const std::vector<size_t>& qubits, co
         gate_map gm;
         iarch >> gm; 
         std::vector<size_t> mapped_qubits;
-        for (auto i : qubits) mapped_qubits.push_back(qubit_map[i]);
+        for (auto i = qubits.rbegin(); i != qubits.rend(); ++i) mapped_qubits.push_back(qubit_map[*i]);
         for (size_t i = 0; i < qubits.size(); i++) 
             simulator.swap(i, mapped_qubits[i]);
         
