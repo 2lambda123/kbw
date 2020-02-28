@@ -27,6 +27,5 @@ add_executable(kbw
 target_link_libraries(kbw ${CONAN_LIBS})
 
 install(TARGETS kbw DESTINATION /usr/bin)
-install(FILES kbw.desktop DESTINATION /usr/share/applications)
-install(FILES kbw.png DESTINATION /usr/share/icons)
-
+install(FILES desktop/kbw.desktop DESTINATION /usr/share/applications)
+install(FILES desktop/kbw.png DESTINATION /usr/share/icons)

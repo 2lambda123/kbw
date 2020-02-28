@@ -3,4 +3,5 @@ Type=Application
 Name=kbw
 Exec=kbw
 Icon=kbw
-Categories=Science;
+Terminal=true
+Categories=Science;ComputerScience;
