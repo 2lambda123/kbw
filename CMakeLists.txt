@@ -8,7 +8,7 @@ find_package(BISON)
 find_package(FLEX)
 
 BISON_TARGET(Parser src/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
-FLEX_TARGET(Scanner src/scanner.ll  ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
+FLEX_TARGET(Scanner src/scanner.ll ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
 
 ADD_FLEX_BISON_DEPENDENCY(Scanner Parser)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
