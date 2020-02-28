@@ -1,5 +1,5 @@
 #pragma once
-#include "../src/parser.hpp"
+#include "parser.hpp"
 #include "bitwise.hpp"
 #include <vector>
 #include <complex>
