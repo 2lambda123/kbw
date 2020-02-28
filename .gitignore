@@ -1,8 +1,2 @@
-**.o
-src/location.hh
-src/parser.hpp
-src/parser.output
-src/parser.cpp
-kbw
-out.qasm
 .vscode
+build
