@@ -1,16 +1,8 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.15)
 
 project(kbw)
 
 add_compile_options(-Wall -Wextra -pedantic -Werror)
-
-find_package(BISON)
-find_package(FLEX)
-
-BISON_TARGET(Parser src/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
-FLEX_TARGET(Scanner src/scanner.ll ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
-
-ADD_FLEX_BISON_DEPENDENCY(Scanner Parser)
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
@@ -21,6 +13,24 @@ endif()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 set(CMAKE_BUILD_TYPE Release)
+
+conan_add_remote(NAME bincrafters INDEX 1
+            URL https://api.bintray.com/conan/bincrafters/public-conan)
+
+if(NOT TARGET CONAN_PKG::bison_installer)
+    conan_cmake_run(REQUIRES bison_installer/3.3.2@bincrafters/stable
+                            flex_installer/2.6.4@bincrafters/stable
+                    BASIC_SETUP CMAKE_TARGETS
+                    BUILD missing)
+endif()
+
+find_package(BISON)
+find_package(FLEX)
+
+BISON_TARGET(Parser src/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
+FLEX_TARGET(Scanner src/scanner.ll ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
+
+ADD_FLEX_BISON_DEPENDENCY(Scanner Parser)
 
 if (NOT TARGET CONAN_PKG::boost)
         conan_cmake_run(REQUIRES boost/1.71.0
