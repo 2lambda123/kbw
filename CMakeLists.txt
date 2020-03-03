@@ -11,8 +11,7 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
-
-set(CMAKE_BUILD_TYPE Release)
+conan_cmake_run(CONFIGURATION_TYPES "Release;Debug")
 
 conan_add_remote(NAME bincrafters INDEX 1
                  URL https://api.bintray.com/conan/bincrafters/public-conan)
