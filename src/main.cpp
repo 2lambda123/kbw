@@ -1,30 +1,11 @@
-#include "../include/driver.hpp"
-#include <boost/program_options.hpp>
+#include "antlr4-runtime.h"
+#include "kqasmLexer.h"
+#include "kqasmParser.h"
+#include "kqasmBaseVisitor.h"
 
-int main(int argc, char* argv[]) {
+#include <iostream>
 
-    size_t seed = 42;
+int main(int argc, const char* argv[]) {
+    std::ifstream file{argv[1]};
 
-    try {
-        boost::program_options::options_description desc{"Options"};
-        desc.add_options()
-            ("help,h", "Show this informations")
-            ("seed,s", boost::program_options::value<size_t>()->default_value(42), "Pseudo random number generator seed");
-        boost::program_options::variables_map vm;
-        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
-
-        if (vm.count("help")) {
-            std::cout << desc << std::endl;
-            return 0;
-        } 
-        
-        if (vm.count("seed")) {
-            seed = vm["seed"].as<size_t>();
-        }
-    } catch (const boost::program_options::error& e) {
-        std::cerr << e.what() << std::endl;
-    }
-
-    Driver dvr{seed};
-    return dvr.parse();
 }

@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.15)
 
 project(kbw)
 
-add_compile_options(-Wall -Wextra -pedantic -Werror)
+add_compile_options(-Wall -Wextra -pedantic)
 
+################ CONAN - BOOST ################
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
     message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
     file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
@@ -12,43 +13,39 @@ endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
-conan_add_remote(NAME bincrafters INDEX 1
-                 URL https://api.bintray.com/conan/bincrafters/public-conan)
-
-if(NOT TARGET CONAN_PKG::bison_installer)
-    conan_cmake_run(REQUIRES bison_installer/3.3.2@bincrafters/stable
-                             flex_installer/2.6.4@bincrafters/stable
-                    BASIC_SETUP CMAKE_TARGETS
-                    BUILD missing)
-endif()
-
-find_package(BISON)
-find_package(FLEX)
-
-BISON_TARGET(Parser src/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
-FLEX_TARGET(Scanner src/scanner.ll ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
-
-ADD_FLEX_BISON_DEPENDENCY(Scanner Parser)
-
 if (NOT TARGET CONAN_PKG::boost)
     conan_cmake_run(REQUIRES boost/1.71.0
                     BASIC_SETUP CMAKE_TARGETS
                     BUILD missing)
 endif()
+#################################################
 
-file(GLOB_RECURSE SOURCES src/*.cpp)
+################ ANTLR4 ################
+execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/antlr4_download.sh
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools/)
+                
+add_subdirectory(${CMAKE_SOURCE_DIR}/tools/cpp_runtime/)
+include_directories(${CMAKE_SOURCE_DIR}/tools/cpp_runtime/runtime/src)
+#################################################
+
+add_compile_options(-Wall -Wextra -pedantic)
+
+add_custom_target(parser 
+                  COMMAND java -jar ${CMAKE_SOURCE_DIR}/tools/antlr.jar -Dlanguage=Cpp -visitor -no-listener ${CMAKE_SOURCE_DIR}/src/kqasm.g4 -o ${CMAKE_CURRENT_BINARY_DIR}
+                  SOURCES src/kqasm.g4)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+
+file(GLOB_RECURSE SOURCES *.cpp)
 
 add_executable(kbw
-               ${SOURCES}
-               ${BISON_Parser_OUTPUTS} 
-               ${FLEX_Scanner_OUTPUTS})
+               ${SOURCES})
 
-target_include_directories(kbw
-                           PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-                                   ${PROJECT_SOURCE_DIR}/src )
-
-target_link_libraries(kbw CONAN_PKG::boost)
+target_link_libraries(kbw CONAN_PKG::boost antlr4_static)
 
 install(TARGETS kbw DESTINATION /usr/bin)
 install(FILES desktop/kbw.desktop DESTINATION /usr/share/applications)
 install(FILES desktop/kbw.png DESTINATION /usr/share/icons)
+
