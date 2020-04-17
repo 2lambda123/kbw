@@ -367,3 +367,9 @@ tools/cpp_runtime/runtime/src/tree/xpath/XPathWildcardElement.cpp
 tools/cpp_runtime/runtime/src/tree/xpath/XPathWildcardElement.h
 tools/cpp_runtime.zip
 tools/antlr.jar
+src/.antlr/kqasm.interp
+src/.antlr/kqasm.tokens
+src/.antlr/kqasmLexer.interp
+src/.antlr/kqasmLexer.java
+src/.antlr/kqasmLexer.tokens
+src/.antlr/kqasmParser.java
