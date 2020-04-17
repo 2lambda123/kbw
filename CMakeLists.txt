@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.15)
 
 project(kbw)
 
-add_compile_options(-Wall -Wextra -pedantic)
-
 ################ CONAN - BOOST ################
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
     message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
@@ -39,6 +37,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 file(GLOB_RECURSE SOURCES src/*.cpp)
 
 add_executable(kbw ${SOURCES})
+
+target_compile_options(kbw PUBLIC -Wall -Wextra -pedantic)
 
 add_dependencies(kbw parser)
                
