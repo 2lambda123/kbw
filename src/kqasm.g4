@@ -3,28 +3,15 @@ grammar kqasm;
 entry : (instruction ENDL+)* EOF
       ;
 
-instruction : ctrl
-            | 'ALLOC' 'DIRTY'? QBIT
-            | 'FREE' 'DIRTY'? QBIT
-            | 'MEASURE' QBIT BIT
-            | 'LABEL' LABEL
-            | 'BR' I64 LABEL LABEL
-            | 'JUMP' LABEL
-            | new_int
+instruction : ('CTRL' ctrl+=QBIT)? gate=('X'|'Y'|'Z'|'H'|'S'|'SD'|'T'|'TD'|'U1'|'U2'|'U3') ('(' DOUBLE+ ')')? QBIT # gate
+            | 'ALLOC' 'DIRTY'? QBIT   # alloc
+            | 'FREE' 'DIRTY'? QBIT    # free
+            | 'MEASURE' QBIT BIT      # measure
+            | 'LABEL' LABEL           # label
+            | 'BR' I64 LABEL LABEL    # branch
+            | 'JUMP' LABEL            # jump
+            | new_int                 # int_instr
             ;
-
-ctrl : ('CTRL' QBIT+)? gate
-     ;
-
-gate : 'X'  QBIT
-     | 'Y'  QBIT 
-     | 'Z'  QBIT
-     | 'H'  QBIT
-     | 'S'  QBIT
-     | 'SD' QBIT  
-     | 'T'  QBIT
-     | 'TD' QBIT
-     ;       
 
 new_int : 'INT' I64 ex=('ZE'|'SE') BIT+
         ;
@@ -33,6 +20,7 @@ UINT : [0-9]+;
 QBIT : 'q'UINT;
 BIT  : 'c'UINT;
 I64  : 'i'UINT;
+DOUBLE : '-'?[0-9]+'.'[0-9]*;
 LABEL: '@'[a-zA-Z]+[.0-9a-zA-Z]*;
 ENDL : '\r''\n'?|'\n';
 WS   : [ \t]+ -> skip;

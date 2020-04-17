@@ -29,12 +29,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/cpp_runtime/runtime/src)
 add_compile_options(-Wall -Wextra -pedantic)
 
 add_custom_target(parser 
-                  COMMAND java -jar ${CMAKE_CURRENT_SOURCE_DIR}/tools/antlr.jar -Dlanguage=Cpp -visitor -no-listener ${CMAKE_CURRENT_SOURCE_DIR}/src/kqasm.g4 -o ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMAND java -jar ${CMAKE_CURRENT_SOURCE_DIR}/tools/antlr.jar -Dlanguage=Cpp -visitor -no-listener ${CMAKE_CURRENT_SOURCE_DIR}/src/kqasm.g4 -o ${CMAKE_CURRENT_BINARY_DIR}/src
                   SOURCES src/kqasm.g4)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE 
+     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/src/*.cpp
+              ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+
 
 add_executable(kbw ${SOURCES})
 
