@@ -2,8 +2,7 @@
 #include <boost/container/map.hpp>
 #include <random>
 
-Bitwise::Bitwise(size_t seed) {
-    std::srand(seed);
+Bitwise::Bitwise() {
     qbits[sim::Index()] = 1;
 }
 
@@ -260,13 +259,8 @@ std::ostream& operator<<(std::ostream &os, const Bitwise& q) {
     return os;
 }
 
-Bitwise::Bitwise(const map& qbits) : qbits{qbits} {}
-
-Bitwise kron(const Bitwise& a, const Bitwise& b) {
-    map qbits;
+Bitwise::Bitwise(const Bitwise& a, const Bitwise& b) {
     for (const auto &i: a.qbits) for (const auto &j: b.qbits) {
         qbits[i.first|j.first] = i.second*j.second; 
     } 
-
-    return Bitwise{qbits};
 }
