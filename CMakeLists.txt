@@ -32,7 +32,7 @@ add_custom_target(parser
                   COMMAND java -jar ${CMAKE_CURRENT_SOURCE_DIR}/tools/antlr.jar -Dlanguage=Cpp -visitor -no-listener ${CMAKE_CURRENT_SOURCE_DIR}/src/kqasm.g4 -o ${CMAKE_CURRENT_BINARY_DIR}/src
                   SOURCES src/kqasm.g4)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 
 file(GLOB_RECURSE 
      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/src/*.cpp
