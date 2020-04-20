@@ -16,6 +16,6 @@ int main(int argc, const char* argv[]) {
     auto* tree = parser.entry();
 
     Assembler assembler;
-    assembler.visitEntry(tree);
-
+    Code code = assembler.visitEntry(tree);
+    code.run();
 }

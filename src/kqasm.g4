@@ -11,6 +11,7 @@ instruction : ('CTRL' ctrl+=QBIT)? gate=('X'|'Y'|'Z'|'H'|'S'|'SD'|'T'|'TD'|'U1'|
             | 'BR' I64 LABEL LABEL  # branch
             | 'JUMP' LABEL          # jump
             | new_int               # int_instr
+            | 'DUMP' QBIT           # dump
             ;
 
 new_int : 'INT' I64 ex=('ZE'|'SE') BIT+  # int_ex

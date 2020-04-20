@@ -11,12 +11,18 @@ size_t Assembler::get_size_t(std::string s) const {
     return idx;
 }
 
+antlrcpp::Any Assembler::visitEntry(kqasmParser::EntryContext *ctx) {
+    visitChildren(ctx);
+    instructions.push_back([](Simulator&, size_t&) {return;});
+    return Code{instructions, labels};
+} 
+
 antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
     std::vector<size_t> ctrl;
     for (auto i : ctx->ctrl) 
         ctrl.push_back(get_size_t(i->getText()));
     
-    auto qbit_idx = get_size_t(ctx->QBIT()[0]->getText());  
+    auto qbit_idx = get_size_t(ctx->QBIT().back()->getText());  
 
     std::vector<double> args;
     for (auto i : ctx->DOUBLE()) 
@@ -24,7 +30,7 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
 
     auto gate = ctx->gate->getText();
 
-    instructions.push_back([ctrl, qbit_idx, gate, args] (Simulator &simulator) {
+    instructions.push_back([ctrl, qbit_idx, gate, args] (Simulator &simulator, size_t&) {
         switch (gate[0]) {
         case 'X':
             simulator.x(qbit_idx, ctrl);
@@ -72,7 +78,7 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
 antlrcpp::Any Assembler::visitAlloc(kqasmParser::AllocContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
     bool dirty = ctx->DIRTY();
-    instructions.push_back([qubit_idx, dirty](Simulator &simulator) {
+    instructions.push_back([qubit_idx, dirty](Simulator &simulator, size_t&) {
         simulator.alloc(qubit_idx, dirty);
     });
 
@@ -82,7 +88,7 @@ antlrcpp::Any Assembler::visitAlloc(kqasmParser::AllocContext *ctx) {
 antlrcpp::Any Assembler::visitFree(kqasmParser::FreeContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
     bool dirty = ctx->DIRTY();
-    instructions.push_back([qubit_idx, dirty](Simulator &simulator) {
+    instructions.push_back([qubit_idx, dirty](Simulator &simulator, size_t&) {
         simulator.free(qubit_idx, dirty);
     });
 
@@ -92,7 +98,7 @@ antlrcpp::Any Assembler::visitFree(kqasmParser::FreeContext *ctx) {
 antlrcpp::Any Assembler::visitMeasure(kqasmParser::MeasureContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
     auto bit_idx = get_size_t(ctx->BIT()->getText());
-    instructions.push_back([qubit_idx, bit_idx](Simulator &simulator) {
+    instructions.push_back([qubit_idx, bit_idx](Simulator &simulator, size_t&) {
         simulator.measure(qubit_idx, bit_idx);
     });
 
@@ -108,11 +114,11 @@ antlrcpp::Any Assembler::visitBranch(kqasmParser::BranchContext *ctx) {
     auto then = labels[ctx->LABEL()[0]->getText()];
     auto otherwise = labels[ctx->LABEL()[1]->getText()];
     auto i64_idx = get_size_t(ctx->I64()->getText());
-    instructions.push_back([i64_idx, then, otherwise](Simulator &simulator) {
+    instructions.push_back([i64_idx, then, otherwise](Simulator &simulator, size_t &pc) {
         if (simulator.get_i64(i64_idx))
-            simulator.jump(then);
+            pc = then;
         else 
-            simulator.jump(otherwise);
+            pc = otherwise;
     });
     
     return 0;
@@ -120,8 +126,8 @@ antlrcpp::Any Assembler::visitBranch(kqasmParser::BranchContext *ctx) {
 
 antlrcpp::Any Assembler::visitJump(kqasmParser::JumpContext *ctx) {
     auto label = labels[ctx->LABEL()->getText()];
-    instructions.push_back([label](Simulator &simulator) {
-        simulator.jump(label);
+    instructions.push_back([label](Simulator&, size_t& pc) {
+        pc = label;
     });
     
     return 0;
@@ -134,7 +140,7 @@ antlrcpp::Any Assembler::visitInt_ex(kqasmParser::Int_exContext *ctx) {
     for (auto i : ctx->BIT())
         bits.push_back(get_size_t(i->getText()));
     auto i64_idx = get_size_t(ctx->I64()->getText());
-    instructions.push_back([se, bits, i64_idx](Simulator &simulator) {
+    instructions.push_back([se, bits, i64_idx](Simulator &simulator, size_t&) {
         std::int64_t value = 0;
         int i = 0;
         for (auto j = bits.rbegin(); j != bits.rend(); ++j) 
@@ -147,4 +153,11 @@ antlrcpp::Any Assembler::visitInt_ex(kqasmParser::Int_exContext *ctx) {
     });
     
     return 0;
+}
+
+antlrcpp::Any Assembler::visitDump(kqasmParser::DumpContext *ctx) {
+    auto qubit_idx = get_size_t(ctx->QBIT()->getText());
+    instructions.push_back([qubit_idx](Simulator &simulator, size_t&) {
+        simulator.dump(qubit_idx);
+    });
 }

@@ -260,7 +260,6 @@ std::ostream& operator<<(std::ostream &os, const Bitwise& q) {
 }
 
 Bitwise::Bitwise(const Bitwise& a, const Bitwise& b) {
-    for (const auto &i: a.qbits) for (const auto &j: b.qbits) {
+    for (const auto &i: a.qbits) for (const auto &j: b.qbits) 
         qbits[i.first|j.first] = i.second*j.second; 
-    } 
 }
