@@ -11,3 +11,7 @@ void Code::run() {
        instructions[pc](simulator, pc);
    }
 }
+
+std::string Code::get_results() {
+    return simulator.get_results();
+}

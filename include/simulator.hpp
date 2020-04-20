@@ -26,6 +26,7 @@ public:
     std::int64_t get_i64(size_t idx);
     void set_i64(size_t idx, std::int64_t value);
     void dump(size_t idx);
+    std::string get_results();
 
 private:
     ctrl_list map_ctrl(const ctrl_list& ctrl);

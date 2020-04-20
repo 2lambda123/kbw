@@ -139,3 +139,10 @@ void Simulator::dump(size_t idx) {
               << *bitwise[allocated_qubits[idx]]
               << "/----------------------/" << std::endl;
 }
+
+std::string Simulator::get_results() {
+    std::stringstream ss;
+    for (auto &i: i64s) 
+        ss << i.first << " " << i.second << std::endl;
+    return ss.str();
+} 
