@@ -16,9 +16,9 @@ if (NOT TARGET CONAN_PKG::boost)
                     BASIC_SETUP CMAKE_TARGETS
                     BUILD missing)
 endif()
-#################################################
+################################################
 
-################ ANTLR4 ################
+################ ANTLR4 ########################
 execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/antlr4_download.sh
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools/)
                 
@@ -26,20 +26,28 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tools/cpp_runtime/ EXCLUDE_FROM_ALL
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/cpp_runtime/runtime/src)
 #################################################
 
-add_compile_options(-Wall -Wextra -pedantic)
-
 add_custom_target(parser 
                   COMMAND java -jar ${CMAKE_CURRENT_SOURCE_DIR}/tools/antlr.jar -Dlanguage=Cpp -visitor -no-listener ${CMAKE_CURRENT_SOURCE_DIR}/src/kqasm.g4 -o ${CMAKE_CURRENT_BINARY_DIR}/src
                   SOURCES src/kqasm.g4)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 
+set_source_files_properties(
+              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmBaseVisitor.cpp
+              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmLexer.cpp
+              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmParser.cpp
+              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmVisitor.cpp
+              PROPERTIES GENERATED TRUE)
+              
 file(GLOB_RECURSE 
-     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/src/*.cpp
-              ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+     SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
-
-add_executable(kbw ${SOURCES})
+add_executable(kbw 
+              ${SOURCES}
+              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmBaseVisitor.cpp
+              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmLexer.cpp
+              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmParser.cpp
+              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmVisitor.cpp)
 
 target_compile_options(kbw PUBLIC -Wall -Wextra -pedantic)
 
