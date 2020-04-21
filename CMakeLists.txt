@@ -22,7 +22,7 @@ endif()
 execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/antlr4_download.sh
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools/)
                 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tools/cpp_runtime/)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tools/cpp_runtime/ EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/cpp_runtime/runtime/src)
 #################################################
 

@@ -25,8 +25,8 @@ int main(int argc, const char* argv[]) {
         boost::program_options::store(parsed, vm);
 
         if (vm.count("help")) {
-        std::cout << desc << std::endl;
-        exit(0);
+            std::cout << desc << std::endl;
+            exit(0);
         } 
 
         seed = vm["seed"].as<size_t>();
@@ -41,10 +41,7 @@ int main(int argc, const char* argv[]) {
     std::srand(seed);
 
     std::ifstream in_file;
-    
-    if (input_path != "") 
-        in_file.open(input_path);
-    
+    if (input_path != "") in_file.open(input_path);
     std::istream &input = input_path == "" ? std::cin : in_file; 
 
     antlr4::ANTLRInputStream file(input);
@@ -59,10 +56,7 @@ int main(int argc, const char* argv[]) {
     code.run();
 
     std::ofstream out_file;
-    if (output_path != "") 
-        out_file.open(output_path);
-
+    if (output_path != "") out_file.open(output_path);
     std::ostream &output = output_path == "" ? std::cout : out_file;
-
     output << code.get_results();
 }

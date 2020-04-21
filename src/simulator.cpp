@@ -135,7 +135,7 @@ void Simulator::set_i64(size_t idx, std::int64_t value) {
 }
 
 void Simulator::dump(size_t idx) {
-    std::cout << "/--------/ q" << idx << " /--------/" << std::endl
+    std::cerr << "/--------/ q" << idx << " /--------/" << std::endl
               << *bitwise[allocated_qubits[idx]]
               << "/----------------------/" << std::endl;
 }
