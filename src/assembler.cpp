@@ -154,10 +154,11 @@ antlrcpp::Any Assembler::visitInt_ex(kqasmParser::Int_exContext *ctx) {
     
     return 0;
 }
-
 antlrcpp::Any Assembler::visitDump(kqasmParser::DumpContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
     instructions.push_back([qubit_idx](Simulator &simulator, size_t&) {
         simulator.dump(qubit_idx);
     });
+    
+    return 0;
 }
