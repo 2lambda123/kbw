@@ -122,7 +122,7 @@ void Simulator::free(size_t idx, bool dirty) {
     allocated_qubits.erase(idx);
 }
 
-int Simulator::get_bit(size_t idx) {
+size_t Simulator::get_bit(size_t idx) {
     return measurement[idx];
 }
 

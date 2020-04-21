@@ -22,7 +22,7 @@ public:
     void measure(size_t idx, size_t bit);
     void alloc(size_t idx, bool dirty = false);
     void free(size_t idx, bool dirty = false);
-    int get_bit(size_t idx);
+    size_t get_bit(size_t idx);
     std::int64_t get_i64(size_t idx);
     void set_i64(size_t idx, std::int64_t value);
     void dump(size_t idx);

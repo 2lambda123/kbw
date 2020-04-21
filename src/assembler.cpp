@@ -142,7 +142,7 @@ antlrcpp::Any Assembler::visitInt_ex(kqasmParser::Int_exContext *ctx) {
     auto i64_idx = get_size_t(ctx->I64()->getText());
     instructions.push_back([se, bits, i64_idx](Simulator &simulator, size_t&) {
         std::int64_t value = 0;
-        int i = 0;
+        size_t i = 0;
         for (auto j = bits.rbegin(); j != bits.rend(); ++j) 
             value |= simulator.get_bit(*j) << i++;
 
