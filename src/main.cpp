@@ -5,6 +5,7 @@
 #include "../include/assembler.hpp"
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <ctime>
 
 int main(int argc, const char* argv[]) {
     size_t seed = 42; 
@@ -16,7 +17,7 @@ int main(int argc, const char* argv[]) {
         boost::program_options::options_description desc{"Options"};
         desc.add_options()
             ("help,h", "Show this informations")
-            ("seed,s", boost::program_options::value<size_t>()->default_value(42), "Pseudo random number generator seed")
+            ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")
             ("kqasm,i", boost::program_options::value<std::string>()->default_value(""), "kqasm input file")
             ("plugin,p", boost::program_options::value<std::string>()->default_value("./"), "plugin directory path")
             ("out,o", boost::program_options::value<std::string>()->default_value(""), "output file");
@@ -31,7 +32,8 @@ int main(int argc, const char* argv[]) {
             exit(0);
         } 
 
-        seed = vm["seed"].as<size_t>();
+        if (vm.count("seed")) seed = vm["seed"].as<size_t>();
+        else seed = std::time(nullptr);
         input_path = vm["kqasm"].as<std::string>();
         output_path = vm["out"].as<std::string>();
         plugin_path = vm["plugin"].as<std::string>();
