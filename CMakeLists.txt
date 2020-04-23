@@ -53,7 +53,21 @@ target_compile_options(kbw PUBLIC -Wall -Wextra -pedantic)
 
 add_dependencies(kbw parser)
                
-target_link_libraries(kbw CONAN_PKG::boost antlr4_static)
+target_link_libraries(kbw CONAN_PKG::boost antlr4_static dl)
+
+add_library(ket_bitwise STATIC 
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/bitwise.cpp 
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/index.cpp)
+
+set_target_properties(ket_bitwise PROPERTIES 
+                      PUBLIC_HEADER "include/ket_bitwise.hpp"
+                      POSITION_INDEPENDENT_CODE ON)
+                      
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/plugin)
+
+install(TARGETS ket_bitwise
+        LIBRARY DESTINATION /usr/lib
+        PUBLIC_HEADER DESTINATION /usr/include)
 
 install(TARGETS kbw DESTINATION /usr/bin)
 install(FILES desktop/kbw.desktop DESTINATION /usr/share/applications)

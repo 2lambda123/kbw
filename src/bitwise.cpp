@@ -1,9 +1,12 @@
-#include "../include/bitwise.hpp"
+#include "../include/ket_bitwise.hpp"
 #include <boost/container/map.hpp>
 #include <random>
 
+using namespace ket;
+using namespace std::complex_literals;
+
 Bitwise::Bitwise() {
-    qbits[sim::Index()] = 1;
+    qbits[Index()] = 1;
 }
 
 void Bitwise::x(size_t idx, const ctrl_list& ctrl) {
@@ -250,8 +253,8 @@ int Bitwise::measure(size_t idx) {
     return result;
 }
 
-std::ostream& operator<<(std::ostream &os, const Bitwise& q) {
-    boost::container::map<sim::Index, complex> sorted;
+std::ostream& ket::operator<<(std::ostream &os, const Bitwise& q) {
+    boost::container::map<Index, complex> sorted;
     sorted.insert(q.qbits.begin(), q.qbits.end());
     for (auto &i : sorted) {
         os << i.first << ' ' << i.second << std::endl;
@@ -262,4 +265,23 @@ std::ostream& operator<<(std::ostream &os, const Bitwise& q) {
 Bitwise::Bitwise(const Bitwise& a, const Bitwise& b) {
     for (const auto &i: a.qbits) for (const auto &j: b.qbits) 
         qbits[i.first|j.first] = i.second*j.second; 
+}
+
+void Bitwise::swap(size_t a, size_t b) {
+    map qbits_tmp{};
+    for (auto &i : qbits) {
+        if (i.first.is_one(a) != i.first.is_one(b)) {
+            auto j = i.first;
+            j.flip(a);
+            j.flip(b);
+            qbits_tmp[j] = i.second;
+        } else {
+            qbits_tmp[i.first] = i.second;
+        }
+    }
+    qbits.swap(qbits_tmp);
+}
+
+map& Bitwise::get_map() {
+    return qbits;
 }

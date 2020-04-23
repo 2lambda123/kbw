@@ -1,8 +1,10 @@
 #include "../include/simulator.hpp"
 #include <iostream>
 
+using namespace ket;
+
 Simulator::Simulator() {
-    for (size_t i = 0; i < 128; i++)
+    for (size_t i = 0; i < 64*Index::size; i++)
         free_qubits.push(i);
 }
 
@@ -87,6 +89,18 @@ void Simulator::u2(double phi, double lambda, size_t idx, const ctrl_list& ctrl)
 void Simulator::u3(double theta, double phi, double lambda, size_t idx, const ctrl_list& ctrl) {
     join(allocated_qubits[idx], map_ctrl(ctrl));
     bitwise[allocated_qubits[idx]]->u3(theta, phi, lambda, allocated_qubits[idx], map_ctrl(ctrl));
+}
+
+void Simulator::apply_plugin(const boost::shared_ptr<bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args) {
+    auto mapped_idx = map_ctrl(idx);
+    join(allocated_qubits[idx[0]], mapped_idx); 
+    for (size_t i = 0; i < idx.size(); i++)
+        bitwise[mapped_idx[0]]->swap(i, mapped_idx[mapped_idx.size()-i-1]);
+
+    plugin->run(bitwise[mapped_idx[0]]->get_map(), idx.size(), args);
+    
+    for (size_t i = 0; i < idx.size(); i++)
+        bitwise[mapped_idx[0]]->swap(i, mapped_idx[mapped_idx.size()-i-1]);
 }
 
 void Simulator::measure(size_t idx, size_t bit) {

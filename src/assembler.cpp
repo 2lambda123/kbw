@@ -1,6 +1,9 @@
 #include "../include/assembler.hpp"
 #include "../include/simulator.hpp"
+#include <boost/dll/import.hpp> 
 #include <iostream>
+
+Assembler::Assembler(const std::string& plugin_path) : plugin_path{plugin_path} {}
 
 size_t Assembler::get_size_t(std::string s) const {
     std::stringstream ss;
@@ -160,5 +163,24 @@ antlrcpp::Any Assembler::visitDump(kqasmParser::DumpContext *ctx) {
         simulator.dump(qubit_idx);
     });
     
+    return 0;
+}
+
+antlrcpp::Any Assembler::visitPlugin(kqasmParser::PluginContext *ctx) {
+    
+    boost::dll::fs::path lib_path(plugin_path);       
+    auto plugin = boost::dll::import<ket::bitwise_api>(lib_path / ctx->STR()->getText(),             
+                                             "plugin",                                     
+                                             boost::dll::load_mode::append_decorations);
+    
+    std::vector<size_t> qubit_idx;
+    for (auto &i : ctx->QBIT()) qubit_idx.push_back(get_size_t(i->getText())); 
+
+    auto args = ctx->ARGS() ? ctx->ARGS()->getText().substr(1, ctx->ARGS()->getText().size()-2) : "";
+
+    instructions.push_back([plugin, qubit_idx, args](Simulator &simulator, size_t&) {
+        simulator.apply_plugin(plugin, qubit_idx, args);
+    });
+
     return 0;
 }

@@ -10,6 +10,7 @@ int main(int argc, const char* argv[]) {
     size_t seed = 42; 
     std::string input_path;
     std::string output_path;
+    std::string plugin_path;
     
     try {
         boost::program_options::options_description desc{"Options"};
@@ -17,6 +18,7 @@ int main(int argc, const char* argv[]) {
             ("help,h", "Show this informations")
             ("seed,s", boost::program_options::value<size_t>()->default_value(42), "Pseudo random number generator seed")
             ("kqasm,i", boost::program_options::value<std::string>()->default_value(""), "kqasm input file")
+            ("plugin,p", boost::program_options::value<std::string>()->default_value("./"), "plugin directory path")
             ("out,o", boost::program_options::value<std::string>()->default_value(""), "output file");
 
         boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).run();
@@ -32,6 +34,7 @@ int main(int argc, const char* argv[]) {
         seed = vm["seed"].as<size_t>();
         input_path = vm["kqasm"].as<std::string>();
         output_path = vm["out"].as<std::string>();
+        plugin_path = vm["plugin"].as<std::string>();
 
     } catch (boost::program_options::error &e) {
         std::cerr << e.what() << std::endl;
@@ -51,7 +54,7 @@ int main(int argc, const char* argv[]) {
 
     auto* tree = parser.entry();
 
-    Assembler assembler;
+    Assembler assembler{plugin_path};
     Code code = assembler.visitEntry(tree);
     code.run();
 
