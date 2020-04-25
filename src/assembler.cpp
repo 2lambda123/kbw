@@ -114,23 +114,23 @@ antlrcpp::Any Assembler::visitLabel(kqasmParser::LabelContext *ctx) {
 }
 
 antlrcpp::Any Assembler::visitBranch(kqasmParser::BranchContext *ctx) {
-    auto then = labels[ctx->LABEL()[0]->getText()];
-    auto otherwise = labels[ctx->LABEL()[1]->getText()];
+    auto then = ctx->LABEL()[0]->getText();
+    auto otherwise = ctx->LABEL()[1]->getText();
     auto i64_idx = get_size_t(ctx->I64()->getText());
-    instructions.push_back([i64_idx, then, otherwise](Simulator &simulator, size_t &pc) {
+    instructions.push_back([this, i64_idx, then, otherwise](Simulator &simulator, size_t &pc) {
         if (simulator.get_i64(i64_idx))
-            pc = then;
+            pc = this->labels.at(then);
         else 
-            pc = otherwise;
+            pc = this->labels.at(otherwise);
     });
     
     return 0;
 }
 
 antlrcpp::Any Assembler::visitJump(kqasmParser::JumpContext *ctx) {
-    auto label = labels[ctx->LABEL()->getText()];
-    instructions.push_back([label](Simulator&, size_t& pc) {
-        pc = label;
+    auto label = ctx->LABEL()->getText();
+    instructions.push_back([this, label](Simulator&, size_t& pc) {
+        pc = this->labels.at(label);
     });
     
     return 0;
