@@ -42,7 +42,7 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
             simulator.y(qbit_idx, ctrl);
             break;
         case 'Z':
-            simulator.y(qbit_idx, ctrl);
+            simulator.z(qbit_idx, ctrl);
             break;
         case 'H':
             simulator.h(qbit_idx, ctrl);
