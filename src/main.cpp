@@ -19,7 +19,7 @@ int main(int argc, const char* argv[]) {
             ("help,h", "Show this informations")
             ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")
             ("kqasm,i", boost::program_options::value<std::string>()->default_value(""), "kqasm input file")
-            ("plugin,p", boost::program_options::value<std::string>()->default_value("./"), "plugin directory path")
+            ("plugin,p", boost::program_options::value<std::string>()->default_value("/usr/lib/kbw/"), "plugin directory path")
             ("out,o", boost::program_options::value<std::string>()->default_value(""), "output file");
 
         boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).run();

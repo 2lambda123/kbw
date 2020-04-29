@@ -68,10 +68,7 @@ set_target_properties(ket_bitwise PROPERTIES
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/plugin)
 
 install(TARGETS ket_bitwise
-        LIBRARY DESTINATION /usr/lib
+        ARCHIVE DESTINATION /usr/lib
         PUBLIC_HEADER DESTINATION /usr/include)
 
 install(TARGETS kbw DESTINATION /usr/bin)
-install(FILES desktop/kbw.desktop DESTINATION /usr/share/applications)
-install(FILES desktop/kbw.png DESTINATION /usr/share/icons)
-
