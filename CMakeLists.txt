@@ -58,6 +58,8 @@ target_link_libraries(kbw CONAN_PKG::boost antlr4_static dl)
 add_library(ket_bitwise STATIC 
             ${CMAKE_CURRENT_SOURCE_DIR}/src/bitwise.cpp 
             ${CMAKE_CURRENT_SOURCE_DIR}/src/index.cpp)
+            
+target_link_libraries(ket_bitwise CONAN_PKG::boost)
 
 set_target_properties(ket_bitwise PROPERTIES 
                       PUBLIC_HEADER "include/ket_bitwise.hpp"
