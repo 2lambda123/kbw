@@ -1,0 +1,37 @@
+name: kbw
+version: '0.1b'
+summary: Ket Bitwise simulator
+description: Ket Bitwise simulator
+
+base: core18
+confinement: classic
+
+parts:
+  conan:
+    plugin: python
+    python-version: python3
+    python-packages: 
+      - conan 
+
+  kbw:
+    plugin: cmake
+    source: .
+    build-packages: 
+      - pkg-config
+      - uuid-dev
+      - g++-8
+      - gcc-8
+      - default-jre
+      - curl
+      - unzip
+    override-pull: |
+      ln -sf /usr/bin/g++-8 /usr/bin/g++
+      ln -sf /usr/bin/gcc-8 /usr/bin/gcc
+      snapcraftctl pull
+    build-environment: 
+      - PATH: /root/parts/conan/install/bin:$PATH
+      - PYTHONPATH: /root/parts/conan/install/lib/python3.6/site-packages
+
+apps:
+  kbw:
+    command: kbw
