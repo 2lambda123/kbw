@@ -5,6 +5,7 @@
 #include "../include/assembler.hpp"
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <cstdlib>
 #include <ctime>
 
 int main(int argc, const char* argv[]) {
@@ -19,7 +20,7 @@ int main(int argc, const char* argv[]) {
             ("help,h", "Show this informations")
             ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")
             ("kqasm,i", boost::program_options::value<std::string>()->default_value(""), "kqasm input file")
-            ("plugin,p", boost::program_options::value<std::string>()->default_value("/usr/lib/kbw/"), "plugin directory path")
+            ("plugin,p", boost::program_options::value<std::string>(), "plugin directory path")
             ("out,o", boost::program_options::value<std::string>()->default_value(""), "output file");
 
         boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).run();
@@ -36,7 +37,9 @@ int main(int argc, const char* argv[]) {
         else seed = std::time(nullptr);
         input_path = vm["kqasm"].as<std::string>();
         output_path = vm["out"].as<std::string>();
-        plugin_path = vm["plugin"].as<std::string>();
+        if (vm.count("plugin")) plugin_path = vm["plugin"].as<std::string>();
+        else if (std::getenv("SNAP")) plugin_path = std::string{std::getenv("SNAP")} + "/usr/lib/kbw"; 
+        else plugin_path = "/usr/lib/kbw"; 
 
     } catch (boost::program_options::error &e) {
         std::cerr << e.what() << std::endl;

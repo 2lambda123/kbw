@@ -4,7 +4,7 @@ summary: Ket Bitwise simulator
 description: Ket Bitwise simulator
 
 base: core18
-confinement: classic
+confinement: strict
 
 parts:
   conan:
@@ -35,3 +35,9 @@ parts:
 apps:
   kbw:
     command: kbw
+    plugs:
+      - home
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
+
