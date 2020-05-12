@@ -167,11 +167,20 @@ antlrcpp::Any Assembler::visitDump(kqasmParser::DumpContext *ctx) {
 }
 
 antlrcpp::Any Assembler::visitPlugin(kqasmParser::PluginContext *ctx) {
-    
-    boost::dll::fs::path lib_path(plugin_path);       
-    auto plugin = boost::dll::import<ket::bitwise_api>(lib_path / ctx->STR()->getText(),             
-                                             "plugin",                                     
-                                             boost::dll::load_mode::append_decorations);
+
+    std::stringstream path_ss{plugin_path};
+    std::string path;
+    boost::shared_ptr<ket::bitwise_api> plugin;
+    while (std::getline(path_ss, path, ':')) {
+        try {
+            boost::dll::fs::path lib_path(path);       
+            boost::dll::import<ket::bitwise_api>(lib_path / ctx->STR()->getText(),             
+                                                     "plugin",                                     
+                                                     boost::dll::load_mode::append_decorations);
+        } catch (boost::system::system_error &e) {
+            continue;
+        }
+    }
     
     std::vector<size_t> qubit_idx;
     for (auto &i : ctx->QBIT()) qubit_idx.push_back(get_size_t(i->getText())); 

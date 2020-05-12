@@ -12,8 +12,9 @@ int main(int argc, const char* argv[]) {
     size_t seed = 42; 
     std::string input_path;
     std::string output_path;
-    std::string plugin_path;
-    
+    std::string plugin_path = std::getenv("SNAP")? std::string{std::getenv("SNAP")} + "/usr/lib/kbw" 
+                                                 : "/usr/lib/kbw";
+
     try {
         boost::program_options::options_description desc{"Options"};
         desc.add_options()
@@ -37,9 +38,7 @@ int main(int argc, const char* argv[]) {
         else seed = std::time(nullptr);
         input_path = vm["kqasm"].as<std::string>();
         output_path = vm["out"].as<std::string>();
-        if (vm.count("plugin")) plugin_path = vm["plugin"].as<std::string>();
-        else if (std::getenv("SNAP")) plugin_path = std::string{std::getenv("SNAP")} + "/usr/lib/kbw"; 
-        else plugin_path = "/usr/lib/kbw"; 
+        if (vm.count("plugin")) plugin_path = vm["plugin"].as<std::string>() + ":" + plugin_path;
 
     } catch (boost::program_options::error &e) {
         std::cerr << e.what() << std::endl;
