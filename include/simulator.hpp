@@ -1,13 +1,14 @@
 #pragma once
 #include "ket_bitwise.hpp"
-#include <stack>
+#include <boost/asio/thread_pool.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/smart_ptr.hpp>
 #include <functional>
+#include <stack>
 
 class Simulator {
 public:
-    Simulator();
+    Simulator(boost::asio::thread_pool *t_pool);
     void x(size_t idx, const ket::ctrl_list& ctrl = {});
     void y(size_t idx, const ket::ctrl_list& ctrl = {});
     void z(size_t idx, const ket::ctrl_list& ctrl = {});
@@ -31,11 +32,47 @@ public:
     std::string get_results();
 
 private:
-    ket::ctrl_list map_ctrl(const ket::ctrl_list& ctrl);
-    void join(size_t idx, const ket::ctrl_list& ctrl = {});
-    
+    inline ket::ctrl_list map_ctrl(const ket::ctrl_list& ctrl) {
+        ket::ctrl_list mapped_ctrl;
+        for (auto i : ctrl) mapped_ctrl.push_back(allocated_qubits[i]);
+        return mapped_ctrl;
+    }
+
+    inline void join(size_t idx, const ket::ctrl_list& ctrl = {}) {
+        qubits_mutex[idx].lock();
+        if (ctrl.empty()) return;
+        
+        for (auto &i : ctrl) qubits_mutex[i].lock();
+
+        auto ptr = bitwise[idx];
+        for (auto i: ctrl) {
+            auto &bwi = bitwise[i];
+            if (ptr != bwi) ptr = std::make_shared<ket::Bitwise>(*ptr, *bwi);
+        }
+
+        auto &entangle_set = entangled[idx];
+        for (auto i: ctrl) {
+            entangle_set->insert(entangled[i]->begin(), entangled[i]->end());
+            entangled[i] = entangle_set;
+        }
+
+        for (auto i : *entangle_set) {
+            bitwise[i] = ptr;
+        }
+    }
+
+    inline void release(size_t idx, const ket::ctrl_list& ctrl = {}) {
+        qubits_mutex[idx].unlock();
+        if (ctrl.empty()) return;
+        
+        for (auto &i : ctrl) qubits_mutex[i].unlock();
+    }
+
+
     boost::unordered_map<size_t, std::shared_ptr<ket::Bitwise>> bitwise;
     boost::unordered_map<size_t, std::shared_ptr<boost::unordered_set<size_t>>> entangled;
+    boost::unordered_map<size_t, std::mutex> qubits_mutex;
+    boost::asio::thread_pool *t_pool;
 
     boost::unordered_map<size_t, size_t> allocated_qubits;
     std::stack<size_t> free_qubits;

@@ -7,7 +7,8 @@
 
 class Assembler : public kqasmBaseVisitor {
 public:
-    Assembler(const std::string& plugin_path);
+    Assembler(const std::string& plugin_path, boost::asio::thread_pool &t_pool);
+    
     virtual antlrcpp::Any visitEntry(kqasmParser::EntryContext *ctx) override;
     virtual antlrcpp::Any visitGate(kqasmParser::GateContext *ctx) override;
     virtual antlrcpp::Any visitAlloc(kqasmParser::AllocContext *ctx) override;
@@ -27,4 +28,5 @@ private:
 
     std::vector<std::function<void(Simulator&, size_t&)>> instructions; 
     boost::unordered_map<std::string, size_t> labels;
+    boost::asio::thread_pool *t_pool;
 };

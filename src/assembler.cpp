@@ -3,7 +3,10 @@
 #include <boost/dll/import.hpp> 
 #include <iostream>
 
-Assembler::Assembler(const std::string& plugin_path) : plugin_path{plugin_path} {}
+Assembler::Assembler(const std::string& plugin_path, boost::asio::thread_pool &t_pool) : 
+    plugin_path{plugin_path},
+    t_pool{&t_pool}
+    {}
 
 size_t Assembler::get_size_t(std::string s) const {
     std::stringstream ss;
@@ -17,7 +20,7 @@ size_t Assembler::get_size_t(std::string s) const {
 antlrcpp::Any Assembler::visitEntry(kqasmParser::EntryContext *ctx) {
     visitChildren(ctx);
     instructions.push_back([](Simulator&, size_t&) {return;});
-    return Code{instructions, labels};
+    return Code{instructions, labels, t_pool};
 } 
 
 antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
