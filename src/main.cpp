@@ -7,7 +7,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <thread>
 
 int main(int argc, const char* argv[]) {
     size_t seed = 42; 
@@ -59,9 +58,9 @@ int main(int argc, const char* argv[]) {
 
     auto* tree = parser.entry();
 
-    boost::asio::thread_pool t_pool{std::thread::hardware_concurrency()};
-    Assembler assembler{plugin_path, t_pool};
-    Code code = assembler.visitEntry(tree);
+    Assembler assembler{plugin_path};
+    assembler.visitEntry(tree);
+    Code code{assembler.instructions, assembler.labels};
     code.run();
 
     std::ofstream out_file;

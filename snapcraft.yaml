@@ -1,7 +1,8 @@
 name: kbw
+title: Ket Bitwise simulator
 version: '0.1b'
 summary: Ket Bitwise simulator
-description: Ket Bitwise simulator
+description: The Ket Bitwise simulator
 
 base: core18
 confinement: strict

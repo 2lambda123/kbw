@@ -57,7 +57,7 @@ target_compile_options(kbw PUBLIC -Wall -Wextra -pedantic)
 
 add_dependencies(kbw parser)
                
-target_link_libraries(kbw CONAN_PKG::boost antlr4_static dl)
+target_link_libraries(kbw CONAN_PKG::boost antlr4_static dl pthread)
 
 add_library(ket_bitwise STATIC 
             ${CMAKE_CURRENT_SOURCE_DIR}/src/bitwise.cpp 

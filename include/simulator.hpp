@@ -4,11 +4,12 @@
 #include <boost/unordered_set.hpp>
 #include <boost/smart_ptr.hpp>
 #include <functional>
+#include <thread>
 #include <stack>
 
 class Simulator {
 public:
-    Simulator(boost::asio::thread_pool *t_pool);
+    Simulator();
     void x(size_t idx, const ket::ctrl_list& ctrl = {});
     void y(size_t idx, const ket::ctrl_list& ctrl = {});
     void z(size_t idx, const ket::ctrl_list& ctrl = {});
@@ -38,17 +39,49 @@ private:
         return mapped_ctrl;
     }
 
-    inline void join(size_t idx, const ket::ctrl_list& ctrl = {}) {
-        qubits_mutex[idx].lock();
-        if (ctrl.empty()) return;
-        
-        for (auto &i : ctrl) qubits_mutex[i].lock();
-
-        auto ptr = bitwise[idx];
-        for (auto i: ctrl) {
-            auto &bwi = bitwise[i];
-            if (ptr != bwi) ptr = std::make_shared<ket::Bitwise>(*ptr, *bwi);
+    inline void join(size_t idx) {
+        if (qubits_theads.find(idx) != qubits_theads.end()) {
+            qubits_theads[idx]->join();
+            qubits_theads.erase(idx);
         }
+    }
+
+    inline void join_all() {
+        for (auto &i : qubits_theads) i.second->join();
+        qubits_theads.clear();
+    }
+
+    inline void merge(const ket::ctrl_list& ctrl) {
+        for (auto &i : ctrl) join(i);
+        if (ctrl.size() < 2) return;
+        
+        for (auto i : ctrl) bitwise[i]->m.lock();
+
+        auto &ptr = bitwise[ctrl[0]];
+        for (size_t i = 1; i < ctrl.size(); i++)
+            ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[ctrl[i]]);
+
+        auto &entangle_set = entangled[ctrl[0]];
+        for (size_t i = 1; i < ctrl.size(); i++) {
+            entangle_set->insert(entangled[ctrl[i]]->begin(), entangled[ctrl[i]]->end());
+            entangled[ctrl[i]] = entangle_set;
+        }
+
+        for (auto i : *entangle_set) 
+            bitwise[i] = ptr;
+    }
+
+    inline void merge(size_t idx, const ket::ctrl_list& ctrl = {}) {
+        join(idx);
+        if (ctrl.empty()) return;
+
+        for (auto &i : ctrl) join(i);
+        
+        bitwise[idx]->m.lock();
+        for (auto i : ctrl) bitwise[i]->m.lock();
+
+        auto &ptr = bitwise[idx];
+        for (auto i: ctrl) ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[i]);
 
         auto &entangle_set = entangled[idx];
         for (auto i: ctrl) {
@@ -56,23 +89,13 @@ private:
             entangled[i] = entangle_set;
         }
 
-        for (auto i : *entangle_set) {
+        for (auto i : *entangle_set) 
             bitwise[i] = ptr;
-        }
     }
-
-    inline void release(size_t idx, const ket::ctrl_list& ctrl = {}) {
-        qubits_mutex[idx].unlock();
-        if (ctrl.empty()) return;
-        
-        for (auto &i : ctrl) qubits_mutex[i].unlock();
-    }
-
 
     boost::unordered_map<size_t, std::shared_ptr<ket::Bitwise>> bitwise;
     boost::unordered_map<size_t, std::shared_ptr<boost::unordered_set<size_t>>> entangled;
-    boost::unordered_map<size_t, std::mutex> qubits_mutex;
-    boost::asio::thread_pool *t_pool;
+    boost::unordered_map<size_t, std::unique_ptr<std::thread>> qubits_theads;
 
     boost::unordered_map<size_t, size_t> allocated_qubits;
     std::stack<size_t> free_qubits;
