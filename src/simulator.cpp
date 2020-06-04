@@ -15,10 +15,7 @@ Simulator::Simulator() {
     auto mapped_ctrl = map_ctrl(ctrl);\
     merge(qubit_idx, mapped_ctrl);\
     auto &bw = bitwise[qubit_idx];\
-    qubits_theads[qubit_idx] = std::make_unique<std::thread>([qubit_idx, mapped_ctrl, bw] {\
-        std::lock_guard<std::mutex> lock{bw->m};\
-        bw->x(qubit_idx, mapped_ctrl);\
-    });\
+    bw->x(qubit_idx, mapped_ctrl);\
 }
 
 KET_GATE(x)
@@ -35,10 +32,7 @@ void Simulator::u1(double lambda, size_t idx, const ctrl_list& ctrl) {
     auto mapped_ctrl = map_ctrl(ctrl);
     merge(qubit_idx, mapped_ctrl);
     auto &bw = bitwise[qubit_idx];
-    qubits_theads[idx] = std::make_unique<std::thread>([qubit_idx, mapped_ctrl, bw, lambda] {
-        std::lock_guard<std::mutex> lock{bw->m};
-        bw->u1(lambda, qubit_idx, mapped_ctrl);
-    });
+    bw->u1(lambda, qubit_idx, mapped_ctrl);
 }
 
 void Simulator::u2(double phi, double lambda, size_t idx, const ctrl_list& ctrl) {
@@ -46,10 +40,7 @@ void Simulator::u2(double phi, double lambda, size_t idx, const ctrl_list& ctrl)
     auto mapped_ctrl = map_ctrl(ctrl);
     merge(qubit_idx, mapped_ctrl);
     auto &bw = bitwise[qubit_idx];
-    qubits_theads[idx] = std::make_unique<std::thread>([qubit_idx, mapped_ctrl, bw, phi, lambda] {
-        std::lock_guard<std::mutex> lock{bw->m};  
-        bw->u2(phi, lambda, qubit_idx, mapped_ctrl);
-    });
+    bw->u2(phi, lambda, qubit_idx, mapped_ctrl);
 }
 
 void Simulator::u3(double theta, double phi, double lambda, size_t idx, const ctrl_list& ctrl) {
@@ -57,32 +48,24 @@ void Simulator::u3(double theta, double phi, double lambda, size_t idx, const ct
     auto mapped_ctrl = map_ctrl(ctrl);
     merge(qubit_idx, mapped_ctrl);
     auto &bw = bitwise[qubit_idx];
-    qubits_theads[idx] = std::make_unique<std::thread>([qubit_idx, mapped_ctrl, bw, theta, phi, lambda] {
-        std::lock_guard<std::mutex> lock{bw->m};  
-        bw->u3(theta, phi, lambda, qubit_idx, mapped_ctrl);
-    });   
+    bw->u3(theta, phi, lambda, qubit_idx, mapped_ctrl);
 }
 
 void Simulator::apply_plugin(const boost::shared_ptr<bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args) {
     auto mapped_idx = map_ctrl(idx);
     merge(mapped_idx); 
     auto &bw = bitwise[mapped_idx[0]];
-    qubits_theads[mapped_idx[0]] = std::make_unique<std::thread>([bw, mapped_idx, plugin, args]{
-        std::lock_guard<std::mutex> lock{bw->m};
-        for (size_t i = 0; i < mapped_idx.size(); i++) bw->swap(i, mapped_idx[mapped_idx.size()-i-1]);
-        plugin->run(bw->get_map(), mapped_idx.size(), args);
-        for (size_t i = 0; i < mapped_idx.size(); i++) bw->swap(i, mapped_idx[mapped_idx.size()-i-1]);
-    });
+    for (size_t i = 0; i < mapped_idx.size(); i++) bw->swap(i, mapped_idx[mapped_idx.size()-i-1]);
+    plugin->run(bw->get_map(), mapped_idx.size(), args);
+    for (size_t i = 0; i < mapped_idx.size(); i++) bw->swap(i, mapped_idx[mapped_idx.size()-i-1]);
 }
 
 void Simulator::measure(size_t idx, size_t bit) {
-    join_all(); 
     measurement[bit] = bitwise[allocated_qubits[idx]]->measure(allocated_qubits[idx]);
     free(idx, false);
 }
 
 void Simulator::alloc(size_t idx, bool dirty) {
-    join_all(); 
     size_t allocated;
     if (dirty and not dirty_qubits.empty()) {
         allocated = dirty_qubits.top();
@@ -99,7 +82,6 @@ void Simulator::alloc(size_t idx, bool dirty) {
 }
 
 void Simulator::free(size_t idx, bool dirty) {
-    join_all(); 
     if (dirty) {
         dirty_qubits.push(allocated_qubits[idx]);
     } else {
@@ -124,14 +106,13 @@ void Simulator::set_i64(size_t idx, std::int64_t value) {
 }
 
 void Simulator::dump(size_t idx) {
-    join_all(); 
-    std::cerr << "/--------/ q" << idx << " /--------/" << std::endl
+    std::cerr << "/--------/ q" << idx << " allocated in "
+              << allocated_qubits[idx] <<" /--------/" << std::endl
               << *bitwise[allocated_qubits[idx]]
-              << "/----------------------/" << std::endl;
+              << "/---------------------------------------/" << std::endl;
 }
 
 std::string Simulator::get_results() {
-    join_all(); 
     std::stringstream ss;
     for (auto &i: i64s) 
         ss << i.first << " " << i.second << std::endl;

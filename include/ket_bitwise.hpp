@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 #include <array>
-#include <mutex>
 
 namespace ket { 
     using complex = std::complex<double>;
@@ -60,8 +59,6 @@ namespace ket {
         void swap(size_t a, size_t b);
 
         map& get_map();
-
-        std::mutex m;
 
     private:
         map qbits;

@@ -4,7 +4,6 @@
 #include <boost/unordered_set.hpp>
 #include <boost/smart_ptr.hpp>
 #include <functional>
-#include <thread>
 #include <stack>
 
 class Simulator {
@@ -39,24 +38,9 @@ private:
         return mapped_ctrl;
     }
 
-    inline void join(size_t idx) {
-        if (qubits_theads.find(idx) != qubits_theads.end()) {
-            qubits_theads[idx]->join();
-            qubits_theads.erase(idx);
-        }
-    }
-
-    inline void join_all() {
-        for (auto &i : qubits_theads) i.second->join();
-        qubits_theads.clear();
-    }
-
     inline void merge(const ket::ctrl_list& ctrl) {
-        for (auto &i : ctrl) join(i);
         if (ctrl.size() < 2) return;
         
-        for (auto i : ctrl) bitwise[i]->m.lock();
-
         auto &ptr = bitwise[ctrl[0]];
         for (size_t i = 1; i < ctrl.size(); i++)
             ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[ctrl[i]]);
@@ -72,14 +56,8 @@ private:
     }
 
     inline void merge(size_t idx, const ket::ctrl_list& ctrl = {}) {
-        join(idx);
         if (ctrl.empty()) return;
-
-        for (auto &i : ctrl) join(i);
         
-        bitwise[idx]->m.lock();
-        for (auto i : ctrl) bitwise[i]->m.lock();
-
         auto &ptr = bitwise[idx];
         for (auto i: ctrl) ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[i]);
 
@@ -95,7 +73,6 @@ private:
 
     boost::unordered_map<size_t, std::shared_ptr<ket::Bitwise>> bitwise;
     boost::unordered_map<size_t, std::shared_ptr<boost::unordered_set<size_t>>> entangled;
-    boost::unordered_map<size_t, std::unique_ptr<std::thread>> qubits_theads;
 
     boost::unordered_map<size_t, size_t> allocated_qubits;
     std::stack<size_t> free_qubits;
