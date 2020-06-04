@@ -15,7 +15,7 @@ Simulator::Simulator() {
     auto mapped_ctrl = map_ctrl(ctrl);\
     merge(qubit_idx, mapped_ctrl);\
     auto &bw = bitwise[qubit_idx];\
-    qubits_theads[idx] = std::make_unique<std::thread>([qubit_idx, mapped_ctrl, bw] {\
+    qubits_theads[qubit_idx] = std::make_unique<std::thread>([qubit_idx, mapped_ctrl, bw] {\
         std::lock_guard<std::mutex> lock{bw->m};\
         bw->x(qubit_idx, mapped_ctrl);\
     });\
