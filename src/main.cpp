@@ -12,8 +12,11 @@ int main(int argc, const char* argv[]) {
     size_t seed = 42; 
     std::string input_path;
     std::string output_path;
-    std::string plugin_path = std::getenv("SNAP")? std::string{std::getenv("SNAP")} + "/usr/lib/kbw" 
-                                                 : "/usr/lib/kbw";
+#ifdef SNAP
+    std::string plugin_path = std::string{std::getenv("SNAP")} + "/usr/lib/kbw";
+#else
+    std::string plugin_path = "/usr/lib/kbw";
+#endif
 
     try {
         boost::program_options::options_description desc{"Options"};
