@@ -200,9 +200,10 @@ antlrcpp::Any Assembler::visitPlugin(kqasmParser::PluginContext *ctx) {
     while (std::getline(path_ss, path, ':')) {
         try {
             boost::dll::fs::path lib_path(path);       
-            boost::dll::import<ket::bitwise_api>(lib_path / ctx->STR()->getText(),             
-                                                     "plugin",                                     
-                                                     boost::dll::load_mode::append_decorations);
+            plugin = boost::dll::import<ket::bitwise_api>(lib_path / ctx->STR()->getText(),             
+                                                          "plugin",                                     
+                                                          boost::dll::load_mode::append_decorations);
+            break;
         } catch (boost::system::system_error &e) {
             continue;
         }
