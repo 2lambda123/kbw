@@ -219,3 +219,90 @@ antlrcpp::Any Assembler::visitPlugin(kqasmParser::PluginContext *ctx) {
 
     return 0;
 }
+
+antlrcpp::Any Assembler::visitInt_infix(kqasmParser::Int_infixContext *ctx) {
+    auto result = get_size_t(ctx->I64()[0]->getText());
+    auto left_idx = get_size_t(ctx->I64()[1]->getText());
+    auto right_idx = get_size_t(ctx->I64()[2]->getText());
+    auto op = ctx->op->getText();
+    
+    instructions.push_back([result, left_idx, right_idx, op](Simulator &simulator, size_t&){
+        auto left = simulator.get_i64(left_idx);
+        auto right = simulator.get_i64(right_idx);
+        switch (op[0]) {
+            case '=':
+                simulator.set_i64(result, left==right);
+                break;
+            case '!':
+                simulator.set_i64(result, left!=right);
+                break;
+            case '>':
+                if (op.size() == 1) {
+                    simulator.set_i64(result, left>right);
+                } else {
+                    switch (op[1]) {
+                        case '=':
+                            simulator.set_i64(result, left>=right);
+                            break;
+                        case '>':
+                            simulator.set_i64(result, left>>right);
+                            break;                        
+                    }
+                }
+                break;                        
+            case '<':
+                if (op.size() == 1) {
+                    simulator.set_i64(result, left<right);
+                } else {
+                    switch (op[1]) {
+                        case '=':
+                            simulator.set_i64(result, left<=right);
+                            break;
+                        case '<':
+                            simulator.set_i64(result, left<<right);
+                            break;                        
+                    }
+                }
+                break;                        
+            case '+':
+                simulator.set_i64(result, left+right);
+                break;
+            case '-':
+                simulator.set_i64(result, left-right);
+                break;
+            case '*': 
+                simulator.set_i64(result, left*right);
+                break;
+            case '/': 
+                simulator.set_i64(result, left/right);
+                break;
+            case 'a':
+                simulator.set_i64(result, left&right);
+                break;
+            case 'x':
+                simulator.set_i64(result, left^right);
+                break;
+            case 'o':
+                simulator.set_i64(result, left|right);
+                break;
+        }
+        
+    });
+
+    return 0;
+}
+
+antlrcpp::Any Assembler::visitInt_const(kqasmParser::Int_constContext *ctx) {
+    std::stringstream ss;
+    ss << ctx->UINT()->getText();
+    std::int64_t uval;
+    ss >> uval;
+    std::int64_t val = ctx->SIG()? -uval : uval;
+    auto idx = get_size_t(ctx->I64()->getText());
+   
+    instructions.push_back([idx, val](Simulator &simulator, size_t&){
+        simulator.set_i64(idx, val);
+    });
+   
+    return 0;
+}

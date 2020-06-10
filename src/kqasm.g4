@@ -40,9 +40,12 @@ instruction : ('CTRL' ctrl+=QBIT)? gate=('X'|'Y'|'Z'|'H'|'S'|'SD'|'T'|'TD'|'U1'|
             ;
 
 new_int : 'INT' I64 ex=('ZE'|'SE') BIT+  # int_ex
+        | 'INT' I64 SIG? UINT            # int_const
+        | 'INT' I64 I64 op=('=='|'!='|'>'|'>='|'<'|'<='|'+'|'-'|'*'|'/'|'<<'|'>>'|'and'|'xor'|'or') I64 # int_infix
         ;
 
 UINT  : [0-9]+;
+SIG   : '-';
 QBIT  : 'q'UINT;
 BIT   : 'c'UINT;
 I64   : 'i'UINT;
