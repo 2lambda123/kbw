@@ -82,8 +82,15 @@ private:
     inline void merge(size_t idx, const ket::ctrl_list& ctrl = {}) {
         if (ctrl.empty()) return;
         
+        bool change = false;
+
         auto &ptr = bitwise[idx];
-        for (auto i: ctrl) ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[i]);
+        for (auto i: ctrl) if (ptr != bitwise[i]) {
+            ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[i]);
+            change = true;
+        }
+
+        if (not change) return;
 
         auto &entangle_set = entangled[idx];
         for (auto i: ctrl) {

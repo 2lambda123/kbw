@@ -54,8 +54,13 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
     auto qbit_idx = get_size_t(ctx->QBIT().back()->getText());  
 
     std::vector<double> args;
-    for (auto i : ctx->DOUBLE()) 
-        args.push_back(get_size_t(i->getText()));
+    for (auto i : ctx->DOUBLE()) {
+        std::stringstream ss;
+        ss << i->getText();
+        double arg;
+        ss >> arg;
+        args.push_back(arg);
+    }
 
     auto gate = ctx->gate->getText();
 
