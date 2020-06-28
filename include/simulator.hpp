@@ -45,7 +45,7 @@ public:
     void u1(double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
     void u2(double phi, double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
     void u3(double theta, double phi, double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
-    void measure(size_t idx, size_t bit);
+    void measure(size_t idx);
     void alloc(size_t idx, bool dirty = false);
     void free(size_t idx, bool dirty = false);
     void apply_plugin(const boost::shared_ptr<ket::bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args);

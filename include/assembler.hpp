@@ -46,6 +46,7 @@ public:
     virtual antlrcpp::Any visitPlugin(kqasmParser::PluginContext *ctx) override;
     virtual antlrcpp::Any visitInt_infix(kqasmParser::Int_infixContext *ctx) override;
     virtual antlrcpp::Any visitInt_const(kqasmParser::Int_constContext *ctx) override;
+    virtual antlrcpp::Any visitSet(kqasmParser::SetContext *ctx) override;
 
     std::vector<std::function<void(Simulator&, size_t&)>> instructions; 
     boost::unordered_map<std::string, size_t> labels;

@@ -131,9 +131,8 @@ antlrcpp::Any Assembler::visitFree(kqasmParser::FreeContext *ctx) {
 
 antlrcpp::Any Assembler::visitMeasure(kqasmParser::MeasureContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
-    auto bit_idx = get_size_t(ctx->BIT()->getText());
-    instructions.push_back([qubit_idx, bit_idx](Simulator &simulator, size_t&) {
-        simulator.measure(qubit_idx, bit_idx);
+    instructions.push_back([qubit_idx](Simulator &simulator, size_t&) {
+        simulator.measure(qubit_idx);
     });
 
     return 0;
@@ -311,4 +310,14 @@ antlrcpp::Any Assembler::visitInt_const(kqasmParser::Int_constContext *ctx) {
     });
    
     return 0;
+}
+
+antlrcpp::Any Assembler::visitSet(kqasmParser::SetContext *ctx) {
+    auto i64_in_idx = get_size_t(ctx->I64()[0]->getText());
+    auto i64_value_idx = get_size_t(ctx->I64()[1]->getText());
+    instructions.push_back([i64_in_idx, i64_value_idx](Simulator &simulator, size_t&) {
+        simulator.set_i64(i64_in_idx, simulator.get_i64(i64_value_idx));
+    });
+
+    return 0;   
 }

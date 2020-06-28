@@ -29,14 +29,15 @@ entry : (instruction ENDL+)* EOF
 
 instruction : ('CTRL' ctrl+=QBIT)? gate=('X'|'Y'|'Z'|'H'|'S'|'SD'|'T'|'TD'|'U1'|'U2'|'U3') ('(' DOUBLE+ ')')? QBIT # gate
             | 'PLUGIN' STR QBIT+ ARGS? # plugin
-            | 'ALLOC' DIRTY? QBIT     # alloc
-            | 'FREE' DIRTY? QBIT      # free
-            | 'MEASURE' QBIT BIT      # measure
-            | 'LABEL' LABEL           # label
-            | 'BR' I64 LABEL LABEL    # branch
-            | 'JUMP' LABEL            # jump
-            | new_int                 # int_instr
-            | 'DUMP' QBIT             # dump
+            | 'ALLOC' DIRTY? QBIT      # alloc
+            | 'FREE' DIRTY? QBIT       # free
+            | 'MEASURE' QBIT           # measure
+            | 'LABEL' LABEL            # label
+            | 'BR' I64 LABEL LABEL     # branch
+            | 'JUMP' LABEL             # jump
+            | new_int                  # int_instr
+            | 'SET' I64 I64            # set
+            | 'DUMP' QBIT              # dump
             ;
 
 new_int : 'INT' I64 ex=('ZE'|'SE') BIT+  # int_ex

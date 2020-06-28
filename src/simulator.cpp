@@ -84,8 +84,8 @@ void Simulator::apply_plugin(const boost::shared_ptr<bitwise_api>& plugin, std::
     for (size_t i = 0; i < mapped_idx.size(); i++) bw->swap(i, mapped_idx[mapped_idx.size()-i-1]);
 }
 
-void Simulator::measure(size_t idx, size_t bit) {
-    measurement[bit] = bitwise[allocated_qubits[idx]]->measure(allocated_qubits[idx]);
+void Simulator::measure(size_t idx) {
+    measurement[idx] = bitwise[allocated_qubits[idx]]->measure(allocated_qubits[idx]);
     free(idx, false);
 }
 
