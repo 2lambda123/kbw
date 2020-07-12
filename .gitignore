@@ -373,4 +373,5 @@ src/.antlr/kqasmLexer.interp
 src/.antlr/kqasmLexer.java
 src/.antlr/kqasmLexer.tokens
 src/.antlr/kqasmParser.java
-kbw_0.1b_amd64.snap
+kbw*.snap
+*.kqasm
