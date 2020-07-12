@@ -36,6 +36,13 @@ parts:
     after:
       - python
 
+slots:
+  kbw:
+    interface: content
+    content: executables
+    read: 
+      - $SNAP/usr/bin
+
 apps:
   kbw:
     command: usr/bin/kbw
