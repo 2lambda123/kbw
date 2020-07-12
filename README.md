@@ -18,7 +18,7 @@ https://snapcraft.io/kbw.
 sudo snap install kbw --edge
 ```
 
-## Install from source 
+### Install from source 
 
 To install from source, follow the commands:
 
