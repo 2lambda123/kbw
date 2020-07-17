@@ -13,8 +13,6 @@ parts:
     plugin: python
     python-packages: 
       - conan 
-    stage-packages:
-      - libpython3.8
 
   kbw:
     plugin: cmake
