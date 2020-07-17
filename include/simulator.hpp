@@ -62,7 +62,7 @@ private:
         return mapped_ctrl;
     }
 
-    inline void merge(const ket::ctrl_list& ctrl) {
+    inline void merge_for_plugin(const ket::ctrl_list& ctrl) {
         if (ctrl.size() < 2) return;
         
         auto &ptr = bitwise[ctrl[0]];
@@ -79,27 +79,37 @@ private:
             bitwise[i] = ptr;
     }
 
-    inline void merge(size_t idx, const ket::ctrl_list& ctrl = {}) {
-        if (ctrl.empty()) return;
+    inline bool merge(size_t idx, ket::ctrl_list& ctrl) {
+        if (ctrl.empty()) return true;
         
-        bool change = false;
+        ket::ctrl_list new_ctrl{};
 
+        for (auto i: ctrl) {
+            if (bitwise[i]->get_map().size() > 1) new_ctrl.push_back(i);
+            else if (bitwise[i]->get_map().begin()->first.is_one(i)) continue;
+            else return false;
+        }
+
+        bool change = false;
         auto &ptr = bitwise[idx];
-        for (auto i: ctrl) if (ptr != bitwise[i]) {
+        for (auto i: new_ctrl) if (ptr != bitwise[i]) {
             ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[i]);
             change = true;
         }
-
-        if (not change) return;
+        
+        if (not change) return true;
 
         auto &entangle_set = entangled[idx];
-        for (auto i: ctrl) {
+        for (auto i: new_ctrl) {
             entangle_set->insert(entangled[i]->begin(), entangled[i]->end());
             entangled[i] = entangle_set;
         }
 
         for (auto i : *entangle_set) 
             bitwise[i] = ptr;
+        
+        ctrl.swap(new_ctrl);
+        return true;
     }
 
     boost::unordered_map<size_t, std::shared_ptr<ket::Bitwise>> bitwise;

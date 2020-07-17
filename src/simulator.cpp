@@ -37,9 +37,10 @@ Simulator::Simulator() {
 #define KET_GATE(x) void Simulator::x(size_t idx, const ctrl_list& ctrl) {\
     auto qubit_idx = allocated_qubits[idx];\
     auto mapped_ctrl = map_ctrl(ctrl);\
-    merge(qubit_idx, mapped_ctrl);\
-    auto &bw = bitwise[qubit_idx];\
-    bw->x(qubit_idx, mapped_ctrl);\
+    if (merge(qubit_idx, mapped_ctrl)) {\
+        auto &bw = bitwise[qubit_idx];\
+        bw->x(qubit_idx, mapped_ctrl);\
+    }\
 }
 
 KET_GATE(x)
@@ -54,30 +55,33 @@ KET_GATE(td)
 void Simulator::u1(double lambda, size_t idx, const ctrl_list& ctrl) {
     auto qubit_idx = allocated_qubits[idx];
     auto mapped_ctrl = map_ctrl(ctrl);
-    merge(qubit_idx, mapped_ctrl);
-    auto &bw = bitwise[qubit_idx];
-    bw->u1(lambda, qubit_idx, mapped_ctrl);
+    if (merge(qubit_idx, mapped_ctrl)) {
+        auto &bw = bitwise[qubit_idx];
+        bw->u1(lambda, qubit_idx, mapped_ctrl);
+    }
 }
 
 void Simulator::u2(double phi, double lambda, size_t idx, const ctrl_list& ctrl) {
     auto qubit_idx = allocated_qubits[idx];
     auto mapped_ctrl = map_ctrl(ctrl);
-    merge(qubit_idx, mapped_ctrl);
-    auto &bw = bitwise[qubit_idx];
-    bw->u2(phi, lambda, qubit_idx, mapped_ctrl);
+    if(merge(qubit_idx, mapped_ctrl)) {
+        auto &bw = bitwise[qubit_idx];
+        bw->u2(phi, lambda, qubit_idx, mapped_ctrl);
+    }
 }
 
 void Simulator::u3(double theta, double phi, double lambda, size_t idx, const ctrl_list& ctrl) {
     auto qubit_idx = allocated_qubits[idx];
     auto mapped_ctrl = map_ctrl(ctrl);
-    merge(qubit_idx, mapped_ctrl);
-    auto &bw = bitwise[qubit_idx];
-    bw->u3(theta, phi, lambda, qubit_idx, mapped_ctrl);
+    if(merge(qubit_idx, mapped_ctrl)) {
+        auto &bw = bitwise[qubit_idx];
+        bw->u3(theta, phi, lambda, qubit_idx, mapped_ctrl);
+    }
 }
 
 void Simulator::apply_plugin(const boost::shared_ptr<bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args) {
     auto mapped_idx = map_ctrl(idx);
-    merge(mapped_idx); 
+    merge_for_plugin(mapped_idx); 
     auto &bw = bitwise[mapped_idx[0]];
     for (size_t i = 0; i < mapped_idx.size(); i++) bw->swap(i, mapped_idx[mapped_idx.size()-i-1]);
     plugin->run(bw->get_map(), mapped_idx.size(), args);
