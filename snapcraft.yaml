@@ -40,6 +40,12 @@ slots:
     content: executables
     read: 
       - $SNAP/usr/bin
+      
+  plugins:
+    interface: content
+    content: libraries
+    read: 
+      - $SNAP/usr/lib/kbw
 
 apps:
   kbw:
