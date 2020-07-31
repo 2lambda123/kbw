@@ -13,6 +13,8 @@ parts:
     plugin: python
     python-packages: 
       - conan 
+    prime: 
+      - -* 
 
   kbw:
     plugin: cmake
@@ -27,8 +29,8 @@ parts:
       - g++
       - gcc
     build-environment:
-      - PATH : $PATH:/root/parts/python/install/bin
-      - PYTHONPATH: /root/parts/python/install/lib/python3.8/site-packages
+      - PATH : $PATH:$SNAPCRAFT_STAGE/bin
+      - PYTHONPATH: $SNAPCRAFT_STAGE/lib/python3.8/site-packages
     cmake-parameters:
       - -DSNAP=1
     after:
