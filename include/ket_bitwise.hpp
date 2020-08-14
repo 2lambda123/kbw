@@ -81,7 +81,7 @@ namespace ket {
     //! Print the Index.
     std::ostream& operator<<(std::ostream &os, const ket::Index& idx);
 
-    using map = boost::unordered_map<Index, complex>; //<! Quantum state hashmap.
+    using map = boost::unordered_map<Index, complex>; //!< Quantum state hashmap.
 
     /*! \brief Store and manipulate the quantum state hashmap.
      *  \class Bitwise
