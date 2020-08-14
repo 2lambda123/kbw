@@ -45,7 +45,7 @@ int main(int argc, const char* argv[]) {
     try {
         boost::program_options::options_description desc{"Options"};
         desc.add_options()
-            ("help,h", "Show this informations")
+            ("help,h", "Show this information")
             ("seed,s", boost::program_options::value<size_t>(), "Pseudo random number generator seed")
             ("kqasm,i", boost::program_options::value<std::string>()->default_value(""), "kqasm input file")
             ("plugin,p", boost::program_options::value<std::string>(), "plugin directory path")
