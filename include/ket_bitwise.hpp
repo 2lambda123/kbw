@@ -155,7 +155,7 @@ namespace ket {
     class BOOST_SYMBOL_VISIBLE bitwise_api {
     public:
         
-        /* \brief Execute plugin.
+        /*! \brief Execute plugin.
          *  
          *  The plugin must modify the qbits param.  We suggest to populate a
          *  new map and perfor a swap at the end. 
