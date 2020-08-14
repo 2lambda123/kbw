@@ -89,7 +89,7 @@ namespace ket {
     class Bitwise {
     public:
     
-        //! Initialize a hashmap in the state \f$\left|0\right\f$.
+        //! Initialize a hashmap in the state \f$\left|0\right>\f$.
         Bitwise();
 
         //! Tensor product between hashmaps.
