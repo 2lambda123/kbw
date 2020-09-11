@@ -90,9 +90,11 @@ private:
             else return false;
         }
 
+        ctrl.swap(new_ctrl);
+
         bool change = false;
         auto &ptr = bitwise[idx];
-        for (auto i: new_ctrl) if (ptr != bitwise[i]) {
+        for (auto i: ctrl) if (ptr != bitwise[i]) {
             ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[i]);
             change = true;
         }
@@ -100,7 +102,7 @@ private:
         if (not change) return true;
 
         auto &entangle_set = entangled[idx];
-        for (auto i: new_ctrl) {
+        for (auto i: ctrl) {
             entangle_set->insert(entangled[i]->begin(), entangled[i]->end());
             entangled[i] = entangle_set;
         }
@@ -108,7 +110,6 @@ private:
         for (auto i : *entangle_set) 
             bitwise[i] = ptr;
         
-        ctrl.swap(new_ctrl);
         return true;
     }
 
