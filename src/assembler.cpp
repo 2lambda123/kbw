@@ -48,8 +48,8 @@ antlrcpp::Any Assembler::visitEntry(kqasmParser::EntryContext *ctx) {
 
 antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
     std::vector<size_t> ctrl;
-    for (auto i : ctx->ctrl) 
-        ctrl.push_back(get_size_t(i->getText()));
+    for (auto i = 0u; i < ctx->QBIT().size()-1; i++)
+        ctrl.push_back(get_size_t(ctx->QBIT()[i]->getText()));
     
     auto qbit_idx = get_size_t(ctx->QBIT().back()->getText());  
 
