@@ -41,8 +41,6 @@ void set_seed(int seed) {
     std::srand(seed);
 }
 
-
-
 kbw::kbw(const std::string& kqasm) {
     std::stringstream input{kqasm};
     antlr4::ANTLRInputStream file(input);
@@ -64,4 +62,8 @@ void kbw::run() {
 
 std::string kbw::get_results() {
     return simulator.get_results();
+}
+
+std::int64_t kbw::get_result(size_t idx) {
+    return simulator.get_i64(idx);
 }

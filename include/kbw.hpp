@@ -42,6 +42,7 @@ public:
     void run();
 
     std::string get_results();
+    std::int64_t get_result(size_t idx);
 
 private:
     std::vector<std::function<void(Simulator&, size_t&)>> instructions; 
