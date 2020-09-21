@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
-project(kbw)
+project(KBW)
 
 if(NOT CMAKE_BUILD_TYPE) 
     set(CMAKE_BUILD_TYPE Release)
@@ -26,13 +26,17 @@ if (NOT TARGET CONAN_PKG::boost)
 endif()
 ################################################
 
+find_package(Threads REQUIRED)
+
 ################ ANTLR4 ########################
 execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/antlr4_download.sh
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools/)
                 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tools/cpp_runtime/ EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/cpp_runtime/runtime/src)
-#################################################
+
+set_target_properties(antlr4_static PROPERTIES 
+                      POSITION_INDEPENDENT_CODE ON)
 
 add_custom_target(parser 
                   COMMAND java -jar ${CMAKE_CURRENT_SOURCE_DIR}/tools/antlr.jar -Dlanguage=Cpp -visitor -no-listener ${CMAKE_CURRENT_SOURCE_DIR}/src/kqasm.g4 -o ${CMAKE_CURRENT_BINARY_DIR}/src
@@ -46,24 +50,45 @@ set_source_files_properties(
               ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmParser.cpp
               ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmVisitor.cpp
               PROPERTIES GENERATED TRUE)
-              
+#################################################
+
+################ SWIG - Python ##################
+find_package(SWIG REQUIRED)
+include(UseSWIG)
+
+SET_PROPERTY(SOURCE src/wrapper.i
+             PROPERTY CPLUSPLUS ON)
+
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+#################################################
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 file(GLOB_RECURSE 
      SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
-add_executable(kbw 
-              ${SOURCES}
-              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmBaseVisitor.cpp
-              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmLexer.cpp
-              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmParser.cpp
-              ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmVisitor.cpp)
+swig_add_library(kbw
+                 LANGUAGE python
+                 SOURCES src/wrapper.i 
+                 ${SOURCES}
+                 ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmBaseVisitor.cpp
+                 ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmLexer.cpp
+                 ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmParser.cpp
+                 ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmVisitor.cpp)
+
+set_target_properties(kbw PROPERTIES 
+                      CXX_STANDARD 17
+                      POSITION_INDEPENDENT_CODE ON)
+
+add_dependencies(kbw parser)
 
 target_compile_options(kbw PUBLIC -Wall -Wextra -pedantic)
 
-add_dependencies(kbw parser)
-               
-target_link_libraries(kbw CONAN_PKG::boost antlr4_static dl pthread)
+target_link_libraries(kbw CONAN_PKG::boost antlr4_static dl ${PYTHON_LIBRARIES} Threads::Threads)
 
 add_library(ket_bitwise STATIC 
+            EXCLUDE_FROM_ALL
             ${CMAKE_CURRENT_SOURCE_DIR}/src/bitwise.cpp 
             ${CMAKE_CURRENT_SOURCE_DIR}/src/index.cpp)
             
@@ -75,8 +100,9 @@ set_target_properties(ket_bitwise PROPERTIES
                       
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/plugin)
 
-install(TARGETS ket_bitwise
-        ARCHIVE DESTINATION /usr/lib
-        PUBLIC_HEADER DESTINATION /usr/include)
+#install(TARGETS ket_bitwise
+#        ARCHIVE DESTINATION /usr/lib
+#        PUBLIC_HEADER DESTINATION /usr/include)
 
-install(TARGETS kbw DESTINATION /usr/bin)
+install(TARGETS kbw DESTINATION kbw)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/kbw.py DESTINATION kbw)

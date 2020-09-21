@@ -22,20 +22,46 @@
  * SOFTWARE.
  */
 
-#include "../include/code.hpp"
+#include "antlr4-runtime.h"
+#include "kqasmLexer.h"
+#include "kqasmParser.h"
+#include "kqasmBaseVisitor.h"
+#include "../include/assembler.hpp"
+#include "../include/kbw.hpp"
 
-Code::Code(const std::vector<std::function<void(Simulator&, size_t&)>> &instructions, 
-           const boost::unordered_map<std::string, size_t> &labels) :
-    instructions{instructions},
-    labels{labels}
-    {}
+void set_plugin_path(const std::string &path) {
+    plugin_path = path;
+}
 
-void Code::run() {
+std::string get_plugin_path() {
+    return plugin_path;
+}
+
+void set_seed(int seed) {
+    std::srand(seed);
+}
+
+
+
+kbw::kbw(const std::string& kqasm) {
+    std::stringstream input{kqasm};
+    antlr4::ANTLRInputStream file(input);
+    kqasmLexer lexer(&file);
+    antlr4::CommonTokenStream tokens(&lexer);
+    kqasmParser parser(&tokens); 
+
+    auto* tree = parser.entry();
+
+    Assembler assembler{instructions, labels};
+    assembler.visitEntry(tree);
+}
+
+void kbw::run() {
    for (size_t pc = 0; pc < instructions.size(); pc++) {
        instructions[pc](simulator, pc);
    }
 }
 
-std::string Code::get_results() {
+std::string kbw::get_results() {
     return simulator.get_results();
 }

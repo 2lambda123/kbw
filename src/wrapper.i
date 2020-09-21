@@ -22,21 +22,21 @@
  * SOFTWARE.
  */
 
-#pragma once 
-#include "simulator.hpp"
-#include <boost/asio/thread_pool.hpp>
+%include <std_string.i>
+%include <std_vector.i>
+%include <stdint.i>
 
-class Code {
-public:
-    Code (const std::vector<std::function<void(Simulator&, size_t&)>> &instructions, 
-          const boost::unordered_map<std::string, size_t> &labels);
+%module kbw
+%{
+    #include "include/kbw.hpp"
+%}
 
-    void run();
+%exception {
+  try {
+    $action
+  } catch(std::exception &e) {
+    SWIG_exception(SWIG_RuntimeError, e.what());
+  }
+}
 
-    std::string get_results();
-
-private:
-    const std::vector<std::function<void(Simulator&, size_t&)>> &instructions; 
-    const boost::unordered_map<std::string, size_t> &labels;
-    Simulator simulator;
-};
+%include "include/kbw.hpp"

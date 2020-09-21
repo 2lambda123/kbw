@@ -8,4 +8,4 @@ add_library(ket_pown SHARED ket_pown.cpp)
 target_link_libraries(ket_pown ket_bitwise)
 
 install(TARGETS ket_pown
-        LIBRARY DESTINATION /usr/lib/kbw/)
+        LIBRARY DESTINATION kbw)

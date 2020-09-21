@@ -24,21 +24,15 @@
 
 #include "../include/assembler.hpp"
 #include "../include/simulator.hpp"
+#include "../include/kbw.hpp"
 #include <boost/dll/import.hpp> 
 #include <iostream>
 
-Assembler::Assembler(const std::string& plugin_path) :
-    plugin_path{plugin_path}
+Assembler::Assembler(std::vector<std::function<void(Simulator&, size_t&)>> &instructions, 
+                     boost::unordered_map<std::string, size_t> &labels) :
+    instructions{instructions},
+    labels{labels}
     {}
-
-size_t Assembler::get_size_t(std::string s) const {
-    std::stringstream ss;
-    auto str = s.substr(1, s.size()-1);  
-    ss << str;
-    size_t idx;
-    ss >> idx;
-    return idx;
-}
 
 antlrcpp::Any Assembler::visitEntry(kqasmParser::EntryContext *ctx) {
     visitChildren(ctx);

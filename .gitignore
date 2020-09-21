@@ -7,3 +7,6 @@ kbw*.snap
 *.kqasm
 html
 xml
+_skbuild
+.eggs
+dist
