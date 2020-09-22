@@ -10,3 +10,5 @@ xml
 _skbuild
 .eggs
 dist
+**__pycache__
+MANIFEST
