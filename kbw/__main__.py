@@ -12,13 +12,13 @@ def wait_command(client, quantum_execution):
     while True:
         print('Waiting command...')
         command = client.recv(4)
-        command = Command(int.from_bytes(command, byteorder='big'))
+        command = Command(int.from_bytes(command, byteorder='little'))
         print('Processing', command)
-        client.sendall((0).to_bytes(1, byteorder='big'))
+        client.sendall((0).to_bytes(1, byteorder='little'))
         if command == Command.GET:
-            idx = int.from_bytes(client.recv(4), byteorder='big')
+            idx = int.from_bytes(client.recv(8), byteorder='little')
             print('Sending result of', idx)
-            client.sendall(quantum_execution.get_result(idx).to_bytes(8, byteorder='big', signed=True))
+            client.sendall(quantum_execution.get_result(idx).to_bytes(8, byteorder='little', signed=True))
         elif command == Command.EXIT:
             break
     client.close()
@@ -42,7 +42,8 @@ def main():
 
         print('Waiting KQASM...')
         
-        file_size = int.from_bytes(client.recv(4), byteorder='big')
+        file_size = int.from_bytes(client.recv(4), byteorder='little')
+        client.sendall((0).to_bytes(1, byteorder='little'))
         
         print('KQASM size:', file_size)
         
@@ -54,13 +55,14 @@ def main():
         kqasm_file = kqasm_buffer.decode()
 
         print('Running KQASM')
+        print(kqasm_file)
         quantum_execution = kbw(kqasm_file)
         quantum_execution.run()
 
         print('Execution results:')
         print(quantum_execution.get_results(), end='') 
         
-        client.sendall((0).to_bytes(1, byteorder='big'))
+        client.sendall((0).to_bytes(1, byteorder='little'))
         
         wait_command(client, quantum_execution)
 
