@@ -29,7 +29,7 @@ description: |
   * The Ket quantum programming language;
   * The C++ quantum programming library Libket.
 
-  See the documentation for more information http://ket.readthedocs.io. 
+  See the documentation for more information http://quantum-ket.gitlab.io.
 
 icon: logo/kbw11.svg
 
