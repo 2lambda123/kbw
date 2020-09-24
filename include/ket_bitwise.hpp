@@ -83,6 +83,8 @@ namespace ket {
 
     using map = boost::unordered_map<Index, complex>; //!< Quantum state hashmap.
 
+    using dump_t = boost::unordered_map<std::uint64_t, std::vector<complex>>; //! Quantum state dump.
+
     /*! \brief Store and manipulate the quantum state hashmap.
      *  \class Bitwise
      */
@@ -139,6 +141,9 @@ namespace ket {
 
         //! Get the quantum state hashmap. 
         map& get_map();
+        
+        //! Dump the quantum state of the first `size` qubits.
+        dump_t dump(size_t size) const;
 
     private:
         map qbits; //<! Quantum state hashmap.

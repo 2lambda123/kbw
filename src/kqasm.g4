@@ -37,7 +37,7 @@ instruction : ('CTRL' QBIT+)? gate=('X'|'Y'|'Z'|'H'|'S'|'SD'|'T'|'TD'|'U1'|'U2'|
             | 'JUMP' LABEL             # jump
             | new_int                  # int_instr
             | 'SET' I64 I64            # set
-            | 'DUMP' QBIT              # dump
+            | 'DUMP' QBIT+             # dump
             ;
 
 new_int : 'INT' I64 ex=('ZE'|'SE') BIT+  # int_ex

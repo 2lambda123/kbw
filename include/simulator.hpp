@@ -52,13 +52,15 @@ public:
     size_t get_bit(size_t idx);
     std::int64_t get_i64(size_t idx);
     void set_i64(size_t idx, std::int64_t value);
-    void dump(size_t idx);
+    void print(size_t idx);
     std::string get_results();
+    void dump(const std::vector<size_t>& idx);
+    ket::dump_t get_dump(size_t idx) const;
 
 private:
-    inline ket::ctrl_list map_ctrl(const ket::ctrl_list& ctrl) {
+    inline ket::ctrl_list map_ctrl(const ket::ctrl_list& ctrl) const {
         ket::ctrl_list mapped_ctrl;
-        for (auto i : ctrl) mapped_ctrl.push_back(allocated_qubits[i]);
+        for (auto i : ctrl) mapped_ctrl.push_back(allocated_qubits.at(i));
         return mapped_ctrl;
     }
 
@@ -122,4 +124,6 @@ private:
 
     boost::unordered_map<size_t, int> measurement;
     boost::unordered_map<size_t, std::int64_t> i64s;
+    
+    std::vector<ket::dump_t> dumps;
 };

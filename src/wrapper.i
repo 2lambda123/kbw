@@ -25,6 +25,8 @@
 %include <std_string.i>
 %include <std_vector.i>
 %include <stdint.i>
+%include <std_complex.i>
+%include <std_pair.i>
 
 %module kbw
 %{
@@ -38,5 +40,21 @@
     SWIG_exception(SWIG_RuntimeError, e.what());
   }
 }
+
+%typemap(out) std::vector<unsigned long long> get_dump_states
+%{
+  $result = PyList_New($1.size());
+  for (size_t i = 0; i < $1.size(); i++) {
+    PyList_SetItem($result, i, PyLong_FromUnsignedLongLong($1.at(i)));
+  }
+%}
+
+%typemap(out) std::vector<std::complex<double>> get_dump_amplitude
+%{
+  $result = PyList_New($1.size());
+  for (size_t i = 0; i < $1.size(); i++) {
+    PyList_SetItem($result, i, PyComplex_FromDoubles($1.at(i).real(), $1.at(i).imag()));
+  }
+%}
 
 %include "include/kbw.hpp"

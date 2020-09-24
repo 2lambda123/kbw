@@ -309,3 +309,14 @@ void Bitwise::swap(size_t a, size_t b) {
 map& Bitwise::get_map() {
     return qbits;
 }
+
+dump_t Bitwise::dump(size_t size) const {
+    dump_t state;
+
+    for (auto &i : qbits) {
+        auto k = i.first[0] & ((1ul << size) -1);
+        state[k].push_back(i.second);
+    }
+    
+    return state;
+}

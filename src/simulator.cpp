@@ -133,7 +133,7 @@ void Simulator::set_i64(size_t idx, std::int64_t value) {
     i64s[idx] = value;
 }
 
-void Simulator::dump(size_t idx) {
+void Simulator::print(size_t idx) {
     std::cerr << "/--------/ q" << idx << " allocated in "
               << allocated_qubits[idx] <<" /--------/" << std::endl
               << *bitwise[allocated_qubits[idx]]
@@ -146,3 +146,22 @@ std::string Simulator::get_results() {
         ss << i.first << " " << i.second << std::endl;
     return ss.str();
 } 
+
+void Simulator::dump(const std::vector<size_t>& idx) {
+    auto mapped_idx = map_ctrl(idx);
+    boost::unordered_set<std::shared_ptr<Bitwise>> maps;
+    for (auto i : mapped_idx) maps.insert(bitwise.at(i));
+
+    auto bw = *(*maps.begin());
+    maps.erase(maps.begin());
+
+    for (auto i : maps) bw = Bitwise(bw, *i);
+    
+    for (size_t i = 0; i < mapped_idx.size(); i++) bw.swap(i, mapped_idx[mapped_idx.size()-i-1]);
+    
+    dumps.push_back(bw.dump(mapped_idx.size()));
+}
+
+dump_t Simulator::get_dump(size_t idx) const {
+    return dumps.at(idx);
+}

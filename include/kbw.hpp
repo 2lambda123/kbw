@@ -44,6 +44,9 @@ public:
     std::string get_results();
     std::int64_t get_result(size_t idx);
 
+    std::vector<unsigned long long> get_dump_states(size_t idx);
+    std::vector<std::complex<double>> get_dump_amplitude(size_t idx, std::uint64_t state);
+
 private:
     std::vector<std::function<void(Simulator&, size_t&)>> instructions; 
     boost::unordered_map<std::string, size_t> labels;
