@@ -1,11 +1,12 @@
-import socket
-import argparse
-from random import randint
-from os.path import dirname
-from math import ceil
-from enum import Enum
-from struct import pack, unpack
 from .kbw import kbw, set_plugin_path, set_seed 
+from enum import Enum
+from math import ceil
+from os.path import dirname
+from random import randint
+from struct import pack, unpack
+from threading import Thread
+import argparse
+import socket
 
 ACK = pack('<b', 0)
 
@@ -14,47 +15,73 @@ class Command(Enum):
     GET = 1
     DUMP = 2
 
-def wait_command(client, quantum_execution): 
-    while True:
-        print('\tWaiting command...')
+class Client(Thread):
+    def __init__(self, client, address):
+        Thread.__init__(self)
+        self.client = client
+        self.address = address
+        print('\tConnected by', address, sep='\t')
+    
+    def run(self):
+        print('\tWaiting KQASM...', self.address, sep='\t')
+        
+        file_size, =  unpack('<I', self.client.recv(4))
+        self.client.sendall(ACK)
+        print('\tKQASM size\t', file_size,self.address, sep='\t')
+        
+        kqasm_buffer = bytearray()
+        for _ in range(ceil(file_size/buffer_size)):
+            data = self.client.recv(buffer_size)
+            kqasm_buffer += data
+        
+        kqasm_file = kqasm_buffer.decode()
 
-        command = Command(*unpack('<b', client.recv(1)))
-        client.sendall(ACK)
-        print('\t\tProcessing', command, sep='\t')
+        print('\tRunning KQASM...', self.address, sep='\t')
+        quantum_execution = kbw(kqasm_file)
+        quantum_execution.run()
 
-        if command == Command.GET:
-            idx, = unpack('<Q', client.recv(8))
-            result = quantum_execution.get_result(idx)
+        self.client.sendall(ACK)
+        
+        while True:
+            print('\tWaiting command...', self.address, sep='\t')
 
-            print('\t\tSending result', idx, result, sep='\t')
-            client.sendall(pack('<Q', result))
+            command = Command(*unpack('<b', self.client.recv(1)))
+            self.client.sendall(ACK)
+            print('\t\tProcessing', command, self.address, sep='\t')
 
-        elif command == Command.DUMP:
-            idx, = unpack('<Q', client.recv(8))
-            result = quantum_execution.get_dump_states(idx)
+            if command == Command.GET:
+                idx, = unpack('<Q', self.client.recv(8))
+                result = quantum_execution.get_result(idx)
 
-            print('\t\tSending dump', idx, result, sep='\t')
-            client.sendall(pack('<Q',  len(result)))
-            
-            client.recv(1)
+                print('\t\tSending result', idx, result, self.address, sep='\t')
+                self.client.sendall(pack('<Q', result))
 
-            for i in result:
-                amplitude = quantum_execution.get_dump_amplitude(idx, i)
-                client.sendall(pack('<QQ', i, len(amplitude)))
-                client.recv(1)                
+            elif command == Command.DUMP:
+                idx, = unpack('<Q', self.client.recv(8))
+                result = quantum_execution.get_dump_states(idx)
+
+                print('\t\tSending dump', idx, result, self.address, sep='\t')
+                self.client.sendall(pack('<Q',  len(result)))
                 
-                print('\t\t\tSending amplitude', i, amplitude, sep='\t')
+                self.client.recv(1)
 
-                for a in amplitude:
-                    cx = pack('<dd', a.real, a.imag)
-                    client.sendall(cx)
-                    client.recv(1)
-            
-        elif command == Command.EXIT:
-            break
+                for i in result:
+                    amplitude = quantum_execution.get_dump_amplitude(idx, i)
+                    self.client.sendall(pack('<QQ', i, len(amplitude)))
+                    self.client.recv(1)                
+                    
+                    print('\t\t\tSending amplitude', i, amplitude, self.address, sep='\t')
 
-    client.close()
-    print("Connection closed\n")
+                    for a in amplitude:
+                        cx = pack('<dd', a.real, a.imag)
+                        self.client.sendall(cx)
+                        self.client.recv(1)
+                
+            elif command == Command.EXIT:
+                break
+
+        self.client.close()
+        print("Connection", self.address, "closed\n")
 
 def main():
     description = 'Ket Biswise Simulator server'
@@ -68,6 +95,7 @@ def main():
     args = parser_args.parse_args() 
 
     print('Setting up:') 
+    global buffer_size
     buffer_size = 1024
 
     set_seed(args.s)
@@ -83,37 +111,20 @@ def main():
     server.bind((socket.gethostbyname(socket.gethostname()), args.p))
     print('\tBind\t\t', socket.gethostbyname(socket.gethostname()), ':', args.p, sep='')
 
-    print()
+    print("\nUse Ctrl+c to stop the server\n")
 
-    server.listen(1)
+    server.listen(5)
 
     while True:
-        print('Waiting connection...')
+        try:
+            print('Waiting connection...')
+            client = Client(*server.accept())
+            client.start()
+        except KeyboardInterrupt:
+            break
 
-        client, address = server.accept()
-        print('\tConnected by', address, sep='\t')
-
-        print('\tWaiting KQASM...')
+    server.close()
+    print("Server stopped")
         
-        file_size, =  unpack('<I', client.recv(4))
-        client.sendall(ACK)
-        print('\tKQASM size\t', file_size, sep='\t')
-        
-        kqasm_buffer = bytearray()
-        for _ in range(ceil(file_size/buffer_size)):
-            data = client.recv(buffer_size)
-            kqasm_buffer += data
-        
-        kqasm_file = kqasm_buffer.decode()
-
-        print('\tRunning KQASM...', end='\t')
-        quantum_execution = kbw(kqasm_file)
-        quantum_execution.run()
-
-        client.sendall(ACK)
-        print('done')
-        
-        wait_command(client, quantum_execution)
-
 if __name__ == "__main__":
     main() 
