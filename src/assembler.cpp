@@ -97,6 +97,9 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
                 break;
             }
             break;
+        case 'R':
+            simulator.rz(args[0], qbit_idx, ctrl);
+            break;
         }
     });
 

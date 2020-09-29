@@ -247,6 +247,18 @@ void Bitwise::u3(double theta, double phi, double lambda, size_t idx, const ctrl
     qbits.swap(qbits_tmp);
 }
 
+void Bitwise::rz(double lambda, size_t idx, const ctrl_list& ctrl) {
+    for (auto &i : qbits) {
+        bool exec = true;
+        for (auto j : ctrl) exec &= i.first.is_one(j);
+        if (exec) {
+            if (i.first.is_one(idx))
+                qbits[i.first] *= std::exp(1i*lambda/2.0);
+            else 
+                qbits[i.first] *= std::exp(-1i*lambda/2.0);
+        } 
+    }
+}
 
 int Bitwise::measure(size_t idx) {
     double p = 0;

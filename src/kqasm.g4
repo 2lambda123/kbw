@@ -27,7 +27,7 @@ grammar kqasm;
 entry : (instruction ENDL+)* EOF
       ;
 
-instruction : ('CTRL' QBIT+)? gate=('X'|'Y'|'Z'|'H'|'S'|'SD'|'T'|'TD'|'U1'|'U2'|'U3') ('(' DOUBLE+ ')')? QBIT # gate
+instruction : ('CTRL' QBIT+)? gate=('X'|'Y'|'Z'|'H'|'S'|'SD'|'T'|'TD'|'U1'|'U2'|'U3'|'RZ') ('(' DOUBLE+ ')')? QBIT # gate
             | 'PLUGIN' STR QBIT+ ARGS? # plugin
             | 'ALLOC' DIRTY? QBIT      # alloc
             | 'FREE' DIRTY? QBIT       # free

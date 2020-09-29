@@ -133,6 +133,9 @@ namespace ket {
         //! Apply a U3 gate with optional quibits of control. 
         void u3(double theta, double phi, double lambda, size_t idx, const ctrl_list& ctrl={});
 
+        //! Apply a RZ gate with optional quibits of control. 
+        void rz(double lambda, size_t idx, const ctrl_list& ctrl={});
+
         //! Measure a qubit.
         int measure(size_t idx);
 

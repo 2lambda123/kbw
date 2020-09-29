@@ -45,6 +45,7 @@ public:
     void u1(double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
     void u2(double phi, double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
     void u3(double theta, double phi, double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
+    void rz(double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
     void measure(size_t idx);
     void alloc(size_t idx, bool dirty = false);
     void free(size_t idx, bool dirty = false);

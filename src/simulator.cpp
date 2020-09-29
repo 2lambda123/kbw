@@ -79,6 +79,15 @@ void Simulator::u3(double theta, double phi, double lambda, size_t idx, const ct
     }
 }
 
+void Simulator::rz(double lambda, size_t idx, const ctrl_list& ctrl) {
+    auto qubit_idx = allocated_qubits[idx];
+    auto mapped_ctrl = map_ctrl(ctrl);
+    if (merge(qubit_idx, mapped_ctrl)) {
+        auto &bw = bitwise[qubit_idx];
+        bw->rz(lambda, qubit_idx, mapped_ctrl);
+    }
+}
+
 void Simulator::apply_plugin(const boost::shared_ptr<bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args) {
     auto mapped_idx = map_ctrl(idx);
     merge_for_plugin(mapped_idx); 
