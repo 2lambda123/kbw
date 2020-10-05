@@ -43,7 +43,15 @@ Simulator::Simulator() {
     }\
 }
 
-KET_GATE(x)
+void Simulator::x(size_t idx, const ctrl_list& ctrl) {
+    auto qubit_idx = allocated_qubits[idx];
+    auto mapped_ctrl = map_ctrl(ctrl);
+    if (merge(qubit_idx, mapped_ctrl)) {
+        auto &bw = bitwise[qubit_idx];
+        bw->x(qubit_idx, mapped_ctrl);
+    }
+}
+
 KET_GATE(y)
 KET_GATE(z)
 KET_GATE(h)

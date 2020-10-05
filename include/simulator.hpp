@@ -69,17 +69,20 @@ private:
         if (ctrl.size() < 2) return;
         
         auto &ptr = bitwise[ctrl[0]];
-        for (size_t i = 1; i < ctrl.size(); i++)
+        for (size_t i = 1; i < ctrl.size(); i++) if (ptr != bitwise[ctrl[i]]) {
             ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[ctrl[i]]);
 
-        auto &entangle_set = entangled[ctrl[0]];
-        for (size_t i = 1; i < ctrl.size(); i++) {
+            auto &entangle_set = entangled[ctrl[0]];
             entangle_set->insert(entangled[ctrl[i]]->begin(), entangled[ctrl[i]]->end());
-            entangled[ctrl[i]] = entangle_set;
+
+            auto entangle_backup = *entangled[ctrl[i]];
+            for (auto j : entangle_backup) 
+                entangled[j] = entangle_set;
+
+            for (auto j : *entangle_set)
+                bitwise[j] = ptr;
         }
 
-        for (auto i : *entangle_set) 
-            bitwise[i] = ptr;
     }
 
     inline bool merge(size_t idx, ket::ctrl_list& ctrl) {
@@ -95,23 +98,20 @@ private:
 
         ctrl.swap(new_ctrl);
 
-        bool change = false;
         auto &ptr = bitwise[idx];
         for (auto i: ctrl) if (ptr != bitwise[i]) {
             ptr = std::make_shared<ket::Bitwise>(*ptr, *bitwise[i]);
-            change = true;
-        }
-        
-        if (not change) return true;
 
-        auto &entangle_set = entangled[idx];
-        for (auto i: ctrl) {
+            auto &entangle_set = entangled[idx];
             entangle_set->insert(entangled[i]->begin(), entangled[i]->end());
-            entangled[i] = entangle_set;
-        }
 
-        for (auto i : *entangle_set) 
-            bitwise[i] = ptr;
+            auto entangle_backup = *entangled[i];
+            for (auto j : entangle_backup) 
+                entangled[j] = entangle_set;
+
+            for (auto j : *entangle_set)
+                bitwise[j] = ptr;
+        }
         
         return true;
     }
