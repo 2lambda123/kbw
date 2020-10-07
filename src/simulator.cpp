@@ -107,7 +107,6 @@ void Simulator::apply_plugin(const boost::shared_ptr<bitwise_api>& plugin, std::
 
 void Simulator::measure(size_t idx) {
     measurement[idx] = bitwise[allocated_qubits[idx]]->measure(allocated_qubits[idx]);
-    free(idx, false);
 }
 
 void Simulator::alloc(size_t idx, bool dirty) {
@@ -130,6 +129,7 @@ void Simulator::free(size_t idx, bool dirty) {
     if (dirty) {
         dirty_qubits.push(allocated_qubits[idx]);
     } else {
+        bitwise[allocated_qubits[idx]]->measure_zero(allocated_qubits[idx]);
         free_qubits.push(allocated_qubits[idx]);
         bitwise.erase(allocated_qubits[idx]);
         entangled[allocated_qubits[idx]]->erase(allocated_qubits[idx]);

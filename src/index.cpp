@@ -83,7 +83,7 @@ bool ket::operator==(const Index& a, const Index& b) {
 }
 
 std::ostream& ket::operator<<(std::ostream &os, const Index& idx) {
-    for (size_t i = idx.size; i > 1; --i) {
+    for (size_t i = idx.size; i > 0; --i) {
         std::bitset<64> bits(idx[i-1]);
         os << bits;
     }

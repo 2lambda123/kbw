@@ -273,7 +273,30 @@ int Bitwise::measure(size_t idx) {
                   (double(std::rand()) / double(RAND_MAX) <= p)?
                   0 : 1;
     
-    p = result == 0? std::sqrt(p) : std::sqrt(1-p);
+    p = result == 0? std::sqrt(p) : std::sqrt(1.0-p);
+
+    map qbits_tmp{};
+
+    for (auto &i : qbits)
+        if (i.first.is_zero(idx) xor result) 
+            qbits_tmp[i.first] = i.second/p;
+
+    qbits.swap(qbits_tmp);
+    return result;
+}
+
+void Bitwise::measure_zero(size_t idx) {
+    double p = 0;
+
+    for (auto &i : qbits) 
+        if (i.first.is_zero(idx)) 
+            p += std::pow(std::abs(i.second), 2);
+            
+    auto result = p != 0 and 
+                  (double(std::rand()) / double(RAND_MAX) <= p)?
+                  0 : 1;
+    
+    p = result == 0? std::sqrt(p) : std::sqrt(1.0-p);
 
     map qbits_tmp{};
 
@@ -288,9 +311,8 @@ int Bitwise::measure(size_t idx) {
             }
         }
     }
-
+    
     qbits.swap(qbits_tmp);
-    return result;
 }
 
 std::ostream& ket::operator<<(std::ostream &os, const Bitwise& q) {

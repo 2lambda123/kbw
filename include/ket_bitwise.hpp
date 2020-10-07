@@ -138,6 +138,8 @@ namespace ket {
 
         //! Measure a qubit.
         int measure(size_t idx);
+        
+        void measure_zero(size_t idx);
 
         //! Apply a SWAP gate.
         void swap(size_t a, size_t b);

@@ -3,6 +3,13 @@ add_executable(u3_test
 
 target_link_libraries(u3_test ket_bitwise)
 
+add_executable(bell 
+               bell.cpp)
+
+target_link_libraries(bell ket_bitwise)
+
+
+
 set_source_files_properties(
               ${CMAKE_BINARY_DIR}/src/kqasmBaseVisitor.cpp
               ${CMAKE_BINARY_DIR}/src/kqasmLexer.cpp
