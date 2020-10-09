@@ -26,41 +26,28 @@
 #include <sstream>
 
 using namespace ket;
+using namespace std::complex_literals;
 
-size_t pown(size_t a, size_t x, size_t n) {
-    size_t result = 1 ;
-
-    while (x--) {
-       result *= a;
-       result %= n;
-    }
-
-    return result;
-}
-
-class ket_pown : public bitwise_api {
+class ket_diag : public bitwise_api {
 public:
     void run(map &qbits, size_t size, std::string args, bool adj, size_t ctrl) const {
-        size_t n, a;
+        double diag[size_t(pow(2, size))];
         std::stringstream ss{args};
-        ss >> n >> a;
+        for (int i = 0; i < pow(2, size); i++) 
+            ss >> diag[i];
 
-        map new_map;
+        if (adj) for (auto &i : diag) i *= -1;
 
         for (auto &i : qbits) {
-            auto val = i.first[0] & ((1ul << size)-1);
-            auto x = val >> (size/2);
-            auto y = pown(a, x, n);
-            val |= y;
-            auto j = i.first;
-            j[0] = val;
-
-            new_map[j] = i.second;                        
+            bool exec = true;
+            for (auto j = size; j < size+ctrl; j++) exec &= i.first.is_one(j);
+            if (exec) {
+                auto val = i.first[0] & ((1ul << size)-1);
+                qbits[i.first] *= exp(1i*diag[val]);
+            }
         }
-
-        qbits.swap(new_map);
         
     }
 };
 
-bitwise_plugin(ket_pown);
+bitwise_plugin(ket_diag);

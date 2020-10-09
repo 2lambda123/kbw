@@ -40,12 +40,19 @@ antlrcpp::Any Assembler::visitEntry(kqasmParser::EntryContext *ctx) {
     return 0;
 } 
 
+antlrcpp::Any Assembler::visitCtrl(kqasmParser::CtrlContext *ctx) {
+    std::vector<size_t> qubits;
+    for (auto i : ctx->QBIT()) 
+        qubits.push_back(get_size_t(i->getText()));
+
+    return qubits;
+}
+
 antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
     std::vector<size_t> ctrl;
-    for (auto i = 0u; i < ctx->QBIT().size()-1; i++)
-        ctrl.push_back(get_size_t(ctx->QBIT()[i]->getText()));
-    
-    auto qbit_idx = get_size_t(ctx->QBIT().back()->getText());  
+    if (ctx->ctrl()) ctrl = visit(ctx->ctrl()).as<std::vector<size_t>>();
+
+    auto qbit_idx = get_size_t(ctx->QBIT()->getText());  
 
     std::vector<double> args;
     for (auto i : ctx->DOUBLE()) {
@@ -141,8 +148,8 @@ antlrcpp::Any Assembler::visitLabel(kqasmParser::LabelContext *ctx) {
 }
 
 antlrcpp::Any Assembler::visitBranch(kqasmParser::BranchContext *ctx) {
-    auto then = ctx->LABEL()[0]->getText();
-    auto otherwise = ctx->LABEL()[1]->getText();
+    auto then = ctx->then->getText();
+    auto otherwise = ctx->otherwise->getText();
     auto i64_idx = get_size_t(ctx->I64()->getText());
     instructions.push_back([this, i64_idx, then, otherwise](Simulator &simulator, size_t &pc) {
         if (simulator.get_i64(i64_idx))
@@ -198,37 +205,45 @@ antlrcpp::Any Assembler::visitDump(kqasmParser::DumpContext *ctx) {
 
 antlrcpp::Any Assembler::visitPlugin(kqasmParser::PluginContext *ctx) {
 
-    std::stringstream path_ss{plugin_path};
-    std::string path;
-    boost::shared_ptr<ket::bitwise_api> plugin;
-    while (std::getline(path_ss, path, ':')) {
-        try {
-            boost::dll::fs::path lib_path(path);       
-            plugin = boost::dll::import<ket::bitwise_api>(lib_path / ctx->STR()->getText(),             
-                                                          "plugin",                                     
-                                                          boost::dll::load_mode::append_decorations);
-            break;
-        } catch (boost::system::system_error &e) {
-            continue;
-        }
-    }
-    
     std::vector<size_t> qubit_idx;
     for (auto &i : ctx->QBIT()) qubit_idx.push_back(get_size_t(i->getText())); 
 
-    auto args = ctx->ARGS() ? ctx->ARGS()->getText().substr(1, ctx->ARGS()->getText().size()-2) : "";
+    std::vector<size_t> ctrl_idx;
+    if (ctx->ctrl()) ctrl_idx = visit(ctx->ctrl()).as<std::vector<size_t>>();
 
-    instructions.push_back([plugin, qubit_idx, args](Simulator &simulator, size_t&) {
-        simulator.apply_plugin(plugin, qubit_idx, args);
+    auto args = ctx->ARGS() ? ctx->ARGS()->getText().substr(1, ctx->ARGS()->getText().size()-2) : "";
+    
+    bool adj = ctx->ADJ();
+    auto ctrl = ctrl_idx.size();
+    
+    auto plugin_name = ctx->STR()->getText();
+
+    instructions.push_back([plugin_name, ctrl, adj, qubit_idx, args, ctrl_idx](Simulator &simulator, size_t&) {
+        std::stringstream path_ss{plugin_path};
+        std::string path;
+        boost::shared_ptr<ket::bitwise_api> plugin;
+        while (std::getline(path_ss, path, ':')) {
+            try {
+                boost::dll::fs::path lib_path(path);       
+                plugin = boost::dll::import<ket::bitwise_api>(lib_path / plugin_name,             
+                                                              "plugin",                                     
+                                                              boost::dll::load_mode::append_decorations);
+                break;
+            } catch (boost::system::system_error &e) {
+                continue;
+            }
+        }
+        
+        simulator.apply_plugin(plugin, qubit_idx, args, adj, ctrl_idx);
     });
 
     return 0;
 }
 
 antlrcpp::Any Assembler::visitInt_infix(kqasmParser::Int_infixContext *ctx) {
-    auto result = get_size_t(ctx->I64()[0]->getText());
-    auto left_idx = get_size_t(ctx->I64()[1]->getText());
-    auto right_idx = get_size_t(ctx->I64()[2]->getText());
+    auto result = get_size_t(ctx->result->getText());
+    auto left_idx = get_size_t(ctx->left->getText());
+    auto right_idx = get_size_t(ctx->right->getText());
     auto op = ctx->op->getText();
     
     instructions.push_back([result, left_idx, right_idx, op](Simulator &simulator, size_t&){
@@ -313,8 +328,8 @@ antlrcpp::Any Assembler::visitInt_const(kqasmParser::Int_constContext *ctx) {
 }
 
 antlrcpp::Any Assembler::visitSet(kqasmParser::SetContext *ctx) {
-    auto i64_in_idx = get_size_t(ctx->I64()[0]->getText());
-    auto i64_value_idx = get_size_t(ctx->I64()[1]->getText());
+    auto i64_in_idx = get_size_t(ctx->target->getText());
+    auto i64_value_idx = get_size_t(ctx->from->getText());
     instructions.push_back([i64_in_idx, i64_value_idx](Simulator &simulator, size_t&) {
         simulator.set_i64(i64_in_idx, simulator.get_i64(i64_value_idx));
     });

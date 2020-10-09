@@ -49,7 +49,7 @@ public:
     void measure(size_t idx);
     void alloc(size_t idx, bool dirty = false);
     void free(size_t idx, bool dirty = false);
-    void apply_plugin(const boost::shared_ptr<ket::bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args);
+    void apply_plugin(const boost::shared_ptr<ket::bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args, bool adj, const ket::ctrl_list& ctrl);
     size_t get_bit(size_t idx);
     std::int64_t get_i64(size_t idx);
     void set_i64(size_t idx, std::int64_t value);
@@ -63,6 +63,22 @@ private:
         ket::ctrl_list mapped_ctrl;
         for (auto i : ctrl) mapped_ctrl.push_back(allocated_qubits.at(i));
         return mapped_ctrl;
+    }
+
+    inline bool map_ctrl_for_plugin(ket::ctrl_list& ctrl) {
+        if (ctrl.empty()) return true;
+        
+        ket::ctrl_list new_ctrl{};
+
+        for (auto i: ctrl) {
+            if (bitwise[i]->get_map().size() > 1) new_ctrl.push_back(i);
+            else if (bitwise[i]->get_map().begin()->first.is_one(i)) continue;
+            else return false;
+        }
+
+        ctrl.swap(new_ctrl);
+        
+        return true;        
     }
 
     inline void merge_for_plugin(const ket::ctrl_list& ctrl) {

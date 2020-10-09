@@ -9,3 +9,9 @@ target_link_libraries(ket_pown ket_bitwise)
 
 install(TARGETS ket_pown
         LIBRARY DESTINATION kbw)
+
+add_library(ket_diag SHARED ket_diag.cpp)
+target_link_libraries(ket_diag ket_bitwise)
+
+install(TARGETS ket_diag
+        LIBRARY DESTINATION kbw)

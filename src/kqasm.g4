@@ -24,36 +24,45 @@
 
 grammar kqasm;
 
-entry : (instruction ENDL+)* EOF
-      ;
+entry : (instruction ENDL+)* EOF;
 
-instruction : ('CTRL' QBIT+)? gate=('X'|'Y'|'Z'|'H'|'S'|'SD'|'T'|'TD'|'U1'|'U2'|'U3'|'RZ') ('(' DOUBLE+ ')')? QBIT # gate
-            | 'PLUGIN' STR QBIT+ ARGS? # plugin
-            | 'ALLOC' DIRTY? QBIT      # alloc
-            | 'FREE' DIRTY? QBIT       # free
-            | 'MEASURE' QBIT           # measure
-            | 'LABEL' LABEL            # label
-            | 'BR' I64 LABEL LABEL     # branch
-            | 'JUMP' LABEL             # jump
-            | new_int                  # int_instr
-            | 'SET' I64 I64            # set
-            | 'DUMP' QBIT+             # dump
+instruction : ctrl? gate=('X'|'Y'|'Z'
+                         |'H'|'S'|'SD'
+                         |'T'|'TD'|'U1'
+                         |'U2'|'U3'|'RZ') ('(' DOUBLE+ ')')? QBIT # gate
+            | ctrl? 'PLUGIN' ADJ? STR QBIT+ ARGS                  # plugin
+            | 'ALLOC' DIRTY? QBIT                                 # alloc
+            | 'BR' I64 then=LABEL otherwise=LABEL                 # branch
+            | 'DUMP' QBIT+                                        # dump
+            | 'FREE' DIRTY? QBIT                                  # free
+            | 'JUMP' LABEL                                        # jump
+            | 'LABEL' LABEL                                       # label
+            | 'MEASURE' QBIT                                      # measure
+            | 'SET' target=I64 from=I64                           # set
+            | new_int                                             # int_instr
             ;
 
-new_int : 'INT' I64 ex=('ZE'|'SE') BIT+  # int_ex
-        | 'INT' I64 SIG? UINT            # int_const
-        | 'INT' I64 I64 op=('=='|'!='|'>'|'>='|'<'|'<='|'+'|'-'|'*'|'/'|'<<'|'>>'|'and'|'xor'|'or') I64 # int_infix
+ctrl : 'CTRL' QBIT+;
+
+new_int : 'INT' result=I64 left=I64 op=('=='|'!='|'>'
+                                       |'>='|'<'|'<='
+                                       |'+'|'-'|'*'
+                                       |'/'|'<<'|'>>'
+                                       |'and'|'xor'|'or') right=I64 # int_infix
+        | 'INT' I64 ex=('ZE'|'SE') BIT+                             # int_ex
+        | 'INT' I64 SIG? UINT                                       # int_const
         ;
 
-UINT  : [0-9]+;
-SIG   : '-';
-QBIT  : 'q'UINT;
-BIT   : 'c'UINT;
-I64   : 'i'UINT;
-DOUBLE: '-'?[0-9]+'.'[0-9]*;
-STR   : [a-zA-Z]+[._0-9a-zA-Z]*;
-LABEL : '@'STR;
+ADJ   : '!';
 ARGS  : '"'~["]+'"';
+BIT   : 'c'UINT;
 DIRTY : 'DIRTY';
+DOUBLE: '-'?[0-9]+'.'[0-9]*;
 ENDL  : '\r''\n'?|'\n';
+I64   : 'i'UINT;
+LABEL : '@'STR;
+QBIT  : 'q'UINT;
+SIG   : '-';
+STR   : [a-zA-Z]+[._0-9a-zA-Z]*;
+UINT  : [0-9]+;
 WS    : [ \t]+ -> skip;

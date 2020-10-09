@@ -177,8 +177,7 @@ namespace ket {
          *  \param size  Number of qubits affected.
          *  \param args  Argument string.
          */
-        virtual void run(map& qbits, size_t size, std::string args) = 0;
-
+        virtual void run(map& qbits, size_t size, std::string args, bool adj, size_t ctrl) const = 0 ;
     };
     
 }

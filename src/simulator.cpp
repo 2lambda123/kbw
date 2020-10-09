@@ -96,12 +96,19 @@ void Simulator::rz(double lambda, size_t idx, const ctrl_list& ctrl) {
     }
 }
 
-void Simulator::apply_plugin(const boost::shared_ptr<bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args) {
+void Simulator::apply_plugin(const boost::shared_ptr<ket::bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args, bool adj, const ctrl_list &ctrl) {
     auto mapped_idx = map_ctrl(idx);
+
+    auto mapped_ctrl = map_ctrl(ctrl);
+    if (not map_ctrl_for_plugin(mapped_ctrl)) return;
+    
+    mapped_idx.insert(mapped_idx.end(), mapped_ctrl.begin(), mapped_ctrl.end());
+
     merge_for_plugin(mapped_idx); 
     auto &bw = bitwise[mapped_idx[0]];
+
     for (size_t i = 0; i < mapped_idx.size(); i++) bw->swap(i, mapped_idx[mapped_idx.size()-i-1]);
-    plugin->run(bw->get_map(), mapped_idx.size(), args);
+    plugin->run(bw->get_map(), idx.size(), args, adj, mapped_ctrl.size());
     for (size_t i = 0; i < mapped_idx.size(); i++) bw->swap(i, mapped_idx[mapped_idx.size()-i-1]);
 }
 

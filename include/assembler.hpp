@@ -48,6 +48,7 @@ public:
     virtual antlrcpp::Any visitInt_infix(kqasmParser::Int_infixContext *ctx) override;
     virtual antlrcpp::Any visitInt_const(kqasmParser::Int_constContext *ctx) override;
     virtual antlrcpp::Any visitSet(kqasmParser::SetContext *ctx) override;
+    virtual antlrcpp::Any visitCtrl(kqasmParser::CtrlContext *ctx) override;
 
 private:
     std::vector<std::function<void(Simulator&, size_t&)>> &instructions; 
