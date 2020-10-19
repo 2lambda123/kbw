@@ -12,3 +12,4 @@ _skbuild
 dist
 **__pycache__
 MANIFEST
+kbw.egg-info
