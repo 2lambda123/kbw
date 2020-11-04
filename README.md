@@ -9,8 +9,9 @@ bitwise representation [[arxiv:2004.03560](https://arxiv.org/abs/2004.03560)].
 
 ### Table of contents:
 
-* [Usage](##usage)  
-* [Installation](##installation)
+* [Usage](#usage)  
+* [Installation](#installation)
+* [Ket Bitwise Plugins](#ket-bitwise-plugins)
 
 ## Usage
 
@@ -35,9 +36,9 @@ optional arguments:
 
 Available installation methods:
 
-* [Snap](###install-using-snap) (recommended)
-* [pip](###install-using-pip)
-* [Source](###install-from-source)
+* [Snap](##install-using-snap) (recommended)
+* [pip](##install-using-pip)
+* [Source](##install-from-source)
 
 ### Install using Snap
 
@@ -89,7 +90,7 @@ To get start developing you own plugin for KBW we recommend modify the example
 plugin: [example.cpp](plugin/example.cpp).  See
 https://quantum-ket.gitlab.io/kbw.html for the Ket Bitwise API documentation.
 
-To use your plugin you can re[install KBW from source](###install-from-source)
+To use your plugin you can re[install KBW from source](##install-from-source)
 or add the compiled plugin to the extra plugin path.
 
 ### Compile example plugin
