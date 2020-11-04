@@ -1,4 +1,5 @@
 [![kbw](https://snapcraft.io//kbw/badge.svg)](https://snapcraft.io/kbw)
+[![PyPI](https://img.shields.io/pypi/v/kbw.svg)](https://pypi.org/project/kbw/)
 
 # Ket Bitwise Simulator
 
@@ -110,7 +111,7 @@ $ ninja example
 $ kbw -l kbw/build/lib
 ```
 
-> Do not execute KBW (Snap or Python) inside project directory or subdirectories.  
+> Do not execute KBW (Snap or Python) inside the project directory or subdirectories.  
 
 -----------
 
