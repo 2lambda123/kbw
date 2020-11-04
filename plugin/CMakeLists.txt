@@ -15,3 +15,11 @@ target_link_libraries(ket_diag ket_bitwise)
 
 install(TARGETS ket_diag
         LIBRARY DESTINATION kbw)
+
+#### Begin example #######################
+add_library(example SHARED example.cpp)
+target_link_libraries(example ket_bitwise)
+
+install(TARGETS example
+        LIBRARY DESTINATION kbw)
+#### End example #######################

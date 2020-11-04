@@ -172,10 +172,15 @@ namespace ket {
          * 
          *  The input qubits are ordend from size-1 to 0 in the hashmap.
          *  Operate with qubits >= size is undefined behavior.
+         *
+         *  The control qubits are ordend from size+ctrl-1 to size in the hashmap.
+         *  Do not modify the control qubits.
          * 
          *  \param qbits Quantum state hashmap
          *  \param size  Number of qubits affected.
          *  \param args  Argument string.
+         *  \param adj   True when the plugin must execute its inverse.
+         *  \param ctrl  Number of control qubits.
          */
         virtual void run(map& qbits, size_t size, std::string args, bool adj, size_t ctrl) const = 0 ;
     };
