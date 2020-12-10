@@ -16,7 +16,7 @@ bitwise representation [[arxiv:2004.03560](https://arxiv.org/abs/2004.03560)].
 
 ## Usage
 
-```shell
+```console
 $ kbw -h
 Ket Biswise Simulator server
 ============================
@@ -49,7 +49,7 @@ The kbw is available in most Linux distribution through the Snap Store.
 > https://snapcraft.io/kbw.
 
 To install using snap runs:
-```shell
+```console
 $ sudo snap install kbw --edge
 ```
 
@@ -66,7 +66,7 @@ Install requirements:
 * unzip
 
 To install using pip runs:
-```shell
+```console
 $ pip install kbw
 ```
 
@@ -79,7 +79,7 @@ $ pip install kbw
 This method has the same install requirements as installing using pip.
 
 To install from source runs:
-```shell
+```console
 $ git clone https://gitlab.com/quantum-ket/kbw.git
 $ cd kbw
 $ python setup.py install
@@ -96,7 +96,7 @@ or add the compiled plugin to the extra plugin path.
 
 ### Compile example plugin
 
-```shell
+```console
 $ git clone https://gitlab.com/quantum-ket/kbw.git
 $ cd kbw
 $ mkdir build
@@ -107,7 +107,7 @@ $ ninja example
 
 ### Add plugin to path
 
-```shell
+```console
 $ kbw -l kbw/build/lib
 ```
 
