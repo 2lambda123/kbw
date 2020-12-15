@@ -1,0 +1,33 @@
+image: ubuntu:20.04
+
+before_script:
+  - ln -snf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
+  - apt-get update -y 
+  - apt-get install -y 
+      cmake 
+      desktop-file-utils
+      fakeroot
+      g++ 
+      gcc 
+      libgdk-pixbuf2.0-dev 
+      libssl-dev 
+      make 
+      ninja-build 
+      patchelf
+      pkg-config 
+      python3
+      python3-pip 
+      python3-setuptools
+      swig 
+      uuid-dev
+      wget
+  - wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /usr/bin/appimagetool
+  - chmod +x /usr/bin/appimagetool
+  - pip3 install appimage-builder
+
+appimage:
+  script:
+    - appimage-builder --skip-test --skip-appimage
+  artifacts:
+    paths:
+    - AppDir
