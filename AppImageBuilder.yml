@@ -16,9 +16,9 @@ AppDir:
 
   app_info:
     id: kbw
-    name: Ket Bitwise Simulator
+    name: kbw
     icon: kbw
-    version: 0.1.0
+    version: continuous
     exec: usr/bin/python3.8
     exec_args: "-m kbw $@"
 

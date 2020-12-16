@@ -5,6 +5,8 @@ before_script:
   - apt-get update -y 
   - apt-get install -y 
       cmake 
+      curl
+      default-jre
       desktop-file-utils
       fakeroot
       g++ 
@@ -14,15 +16,20 @@ before_script:
       make 
       ninja-build 
       patchelf
-      pkg-config 
+      fuse
+      pkg-config
       python3
       python3-pip 
       python3-setuptools
       swig 
+      unzip
       uuid-dev
       wget
-  - wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /usr/bin/appimagetool
-  - chmod +x /usr/bin/appimagetool
+  - wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /usr/bin/appimagetool.AppImage
+  - chmod +x /usr/bin/appimagetool.AppImage
+  - /usr/bin/appimagetool.AppImage --appimage-extract
+  - mv squashfs-root /usr/bin/appimage.AppDir
+  - ln -s /usr/bin/appimage.AppDir/AppRun /usr/bin/appimagetool
   - pip3 install appimage-builder
 
 appimage:
