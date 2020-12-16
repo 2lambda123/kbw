@@ -1,5 +1,6 @@
 [![kbw](https://snapcraft.io//kbw/badge.svg)](https://snapcraft.io/kbw)
 [![PyPI](https://img.shields.io/pypi/v/kbw.svg)](https://pypi.org/project/kbw/)
+[![AppImage](https://gitlab.com/quantum-ket/quantum-ket.gitlab.io/badges/master/pipeline.svg)](https://gitlab.com/quantum-ket/kbw/-/jobs)
 
 # Ket Bitwise Simulator
 
@@ -40,6 +41,8 @@ Available installation methods:
 * [Snap](#install-using-snap) (recommended)
 * [pip](#install-using-pip)
 * [Source](#install-from-source)
+* AppImage available in the pipeline artifacts
+    - https://gitlab.com/quantum-ket/kbw/-/jobs 
 
 ### Install using Snap
 
