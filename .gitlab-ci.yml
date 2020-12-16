@@ -37,4 +37,6 @@ appimage:
     - appimage-builder --skip-test
   artifacts:
     paths:
-    - ./*.AppImage
+      - ./*.AppImage
+  only:
+    - master
