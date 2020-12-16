@@ -7,6 +7,8 @@ from struct import pack, unpack
 from threading import Thread
 import argparse
 import socket
+from sys import argv
+from os import getenv
 
 ACK = pack('<b', 0)
 
@@ -128,4 +130,6 @@ def main():
     print("Server stopped")
         
 if __name__ == "__main__":
+    if '' in argv:
+        argv.remove('')
     main() 

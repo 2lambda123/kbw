@@ -13,3 +13,6 @@ dist
 **__pycache__
 MANIFEST
 kbw.egg-info
+AppDir
+appimage-builder-cache
+*.AppImage

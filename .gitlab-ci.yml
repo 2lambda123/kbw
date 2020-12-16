@@ -27,7 +27,7 @@ before_script:
 
 appimage:
   script:
-    - appimage-builder --skip-test --skip-appimage
+    - appimage-builder --skip-test
   artifacts:
     paths:
-    - AppDir
+    - ./*.AppImage
