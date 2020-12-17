@@ -1,6 +1,6 @@
 [![kbw](https://snapcraft.io//kbw/badge.svg)](https://snapcraft.io/kbw)
 [![PyPI](https://img.shields.io/pypi/v/kbw.svg)](https://pypi.org/project/kbw/)
-[![AppImage](https://gitlab.com/quantum-ket/quantum-ket.gitlab.io/badges/master/pipeline.svg)](https://gitlab.com/quantum-ket/kbw/-/jobs)
+[![AppImage](https://gitlab.com/quantum-ket/kbw/badges/master/pipeline.svg)](https://gitlab.com/quantum-ket/kbw/-/jobs)
 
 # Ket Bitwise Simulator
 
