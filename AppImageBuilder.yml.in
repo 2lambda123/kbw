@@ -18,7 +18,7 @@ AppDir:
     id: kbw
     name: kbw
     icon: kbw
-    version: continuous
+    version: VERSION
     exec: usr/bin/python3.8
     exec_args: "-m kbw $@"
 
