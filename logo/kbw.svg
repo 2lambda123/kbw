@@ -6,11 +6,40 @@
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:xlink="http://www.w3.org/1999/xlink"
-   width="0.6352132in"
-   height="0.39550865in"
-   viewBox="0 0 16.134416 10.04592"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="87.121521"
+   height="55"
+   viewBox="0 0 23.050903 14.552084"
    version="1.1"
-   id="svg8">
+   id="svg8"
+   sodipodi:docname="kbw.svg"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07, custom)">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1024"
+     id="namedview358"
+     showgrid="false"
+     units="px"
+     fit-margin-top="1"
+     fit-margin-bottom="1"
+     fit-margin-left="1"
+     fit-margin-right="1"
+     inkscape:zoom="7.6077811"
+     inkscape:cx="57.465613"
+     inkscape:cy="39.03432"
+     inkscape:window-x="0"
+     inkscape:window-y="28"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg8" />
   <defs
      id="defs2">
     <rect
@@ -1592,7 +1621,7 @@
   </metadata>
   <g
      id="layer1"
-     transform="translate(-33.431734,-102.52027)">
+     transform="matrix(1.3958818,0,0,1.3958818,-46.402166,-142.8416)">
     <path
        id="path49"
        d="m 33.687255,112.51343 h -0.02218 c -0.08335,0 -0.144472,-0.05 -0.183341,-0.14435 V 107.535 l 0.0056,-4.83406 c 0.07221,-0.0835 0.138907,-0.12782 0.200034,-0.12782 0.08891,0 0.15556,0.05 0.205598,0.15 v 9.64591 c -0.05556,0.0943 -0.116693,0.14436 -0.188905,0.14436 z m 0,0"
@@ -1604,13 +1633,7 @@
     <g
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:0.826946px;line-height:1.25;font-family:'Andale Mono';-inkscape-font-specification:'Andale Mono';fill:#40e0d0;fill-opacity:1;stroke:url(#linearGradient930);stroke-width:0.01;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="text906"
-       aria-label="01101011 01100101 01110100
-00100000 01100010 01101001
-01110100 01110111 01101001
-01110011 01100101 00100000
-01110011 01101001 01101101
-01110101 01101100 01100001
-01110100 01101111 01110010">
+       aria-label="01101011 01100101 01110100 00100000 01100010 01101001 01110100 01110111 01101001 01110011 01100101 00100000 01110011 01101001 01101101 01110101 01101100 01100001 01110100 01101111 01110010">
       <path
          id="path1006"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:0.826946px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#40e0d0;fill-opacity:1;stroke:url(#linearGradient1419);stroke-width:0.01;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"

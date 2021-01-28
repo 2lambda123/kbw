@@ -8,6 +8,7 @@ before_script:
       curl
       default-jre
       desktop-file-utils
+      doxygen
       fakeroot
       fuse
       g++ 
@@ -41,5 +42,15 @@ appimage:
   artifacts:
     paths:
       - ./*.AppImage
+  only:
+    - master
+      
+pages:
+  script:
+    - doxygen
+    - mv html public
+  artifacts:
+    paths:
+      - public
   only:
     - master
