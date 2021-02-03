@@ -41,7 +41,19 @@ grade: devel
 base: core20
 confinement: strict
 
-parts:
+parts: 
+  snapcraft-preload:
+    source: https://github.com/sergiusens/snapcraft-preload.git
+    plugin: cmake
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/
+    build-packages:
+      - on amd64:
+        - gcc-multilib
+        - g++-multilib
+    stage-packages:
+      - lib32stdc++6
+
   kbw:
     plugin: python
     source: .
@@ -75,10 +87,12 @@ parts:
     prime:
       - $kbw-files
       - $python-files
+    after: 
+      - snapcraft-preload
  
 apps:
   kbw:
-    command: usr/bin/python3.8 -m kbw
+    command: bin/snapcraft-preload $SNAP/usr/bin/python3.8 -m kbw
     plugs:
       - home
       - network
@@ -87,4 +101,3 @@ apps:
       LC_ALL: C.UTF-8
       LANG: C.UTF-8
       PYTHONPATH: $SNAP/lib/python3.8/site-packages
-
