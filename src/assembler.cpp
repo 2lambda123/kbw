@@ -28,15 +28,14 @@
 #include <boost/dll/import.hpp> 
 #include <iostream>
 
-Assembler::Assembler(std::vector<std::function<void(Simulator&, size_t&)>> &instructions, 
-                     boost::unordered_map<std::string, size_t> &labels) :
+Assembler::Assembler(inst_t &instructions, label_t &labels) :
     instructions{instructions},
     labels{labels}
     {}
 
 antlrcpp::Any Assembler::visitEntry(kqasmParser::EntryContext *ctx) {
     visitChildren(ctx);
-    instructions.push_back([](Simulator&, size_t&) {return;});
+    instructions.push_back([](Simulator&, size_t&, label_t&) {return;});
     return 0;
 } 
 
@@ -65,7 +64,7 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
 
     auto gate = ctx->gate->getText();
 
-    instructions.push_back([ctrl, qbit_idx, gate, args] (Simulator &simulator, size_t&) {
+    instructions.push_back([ctrl, qbit_idx, gate, args] (Simulator &simulator, size_t&, label_t&) {
         switch (gate[0]) {
         case 'X':
             simulator.x(qbit_idx, ctrl);
@@ -116,7 +115,7 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
 antlrcpp::Any Assembler::visitAlloc(kqasmParser::AllocContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
     bool dirty = ctx->DIRTY();
-    instructions.push_back([qubit_idx, dirty](Simulator &simulator, size_t&) {
+    instructions.push_back([qubit_idx, dirty](Simulator &simulator, size_t&, label_t&) {
         simulator.alloc(qubit_idx, dirty);
     });
 
@@ -126,7 +125,7 @@ antlrcpp::Any Assembler::visitAlloc(kqasmParser::AllocContext *ctx) {
 antlrcpp::Any Assembler::visitFree(kqasmParser::FreeContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
     bool dirty = ctx->DIRTY();
-    instructions.push_back([qubit_idx, dirty](Simulator &simulator, size_t&) {
+    instructions.push_back([qubit_idx, dirty](Simulator &simulator, size_t&, label_t&) {
         simulator.free(qubit_idx, dirty);
     });
 
@@ -135,7 +134,7 @@ antlrcpp::Any Assembler::visitFree(kqasmParser::FreeContext *ctx) {
 
 antlrcpp::Any Assembler::visitMeasure(kqasmParser::MeasureContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
-    instructions.push_back([qubit_idx](Simulator &simulator, size_t&) {
+    instructions.push_back([qubit_idx](Simulator &simulator, size_t&, label_t) {
         simulator.measure(qubit_idx);
     });
 
@@ -151,11 +150,11 @@ antlrcpp::Any Assembler::visitBranch(kqasmParser::BranchContext *ctx) {
     auto then = ctx->then->getText();
     auto otherwise = ctx->otherwise->getText();
     auto i64_idx = get_size_t(ctx->I64()->getText());
-    instructions.push_back([this, i64_idx, then, otherwise](Simulator &simulator, size_t &pc) {
+    instructions.push_back([i64_idx, then, otherwise](Simulator &simulator, size_t &pc, label_t& labels) {
         if (simulator.get_i64(i64_idx))
-            pc = this->labels.at(then);
+            pc = labels.at(then);
         else 
-            pc = this->labels.at(otherwise);
+            pc = labels.at(otherwise);
     });
     
     return 0;
@@ -163,8 +162,8 @@ antlrcpp::Any Assembler::visitBranch(kqasmParser::BranchContext *ctx) {
 
 antlrcpp::Any Assembler::visitJump(kqasmParser::JumpContext *ctx) {
     auto label = ctx->LABEL()->getText();
-    instructions.push_back([this, label](Simulator&, size_t& pc) {
-        pc = this->labels.at(label);
+    instructions.push_back([label](Simulator&, size_t& pc, label_t& labels) {
+        pc = labels.at(label);
     });
     
     return 0;
@@ -177,7 +176,7 @@ antlrcpp::Any Assembler::visitInt_ex(kqasmParser::Int_exContext *ctx) {
     for (auto i : ctx->BIT())
         bits.push_back(get_size_t(i->getText()));
     auto i64_idx = get_size_t(ctx->I64()->getText());
-    instructions.push_back([se, bits, i64_idx](Simulator &simulator, size_t&) {
+    instructions.push_back([se, bits, i64_idx](Simulator &simulator, size_t&, label_t&) {
         std::int64_t value = 0;
         size_t i = 0;
         for (auto j = bits.rbegin(); j != bits.rend(); ++j) 
@@ -196,7 +195,7 @@ antlrcpp::Any Assembler::visitDump(kqasmParser::DumpContext *ctx) {
     for (auto i : ctx->QBIT()) 
         qubit_idx.push_back(get_size_t(i->getText()));
 
-    instructions.push_back([qubit_idx](Simulator &simulator, size_t&) {
+    instructions.push_back([qubit_idx](Simulator &simulator, size_t&, label_t&) {
         simulator.dump(qubit_idx);
     });
     
@@ -218,7 +217,7 @@ antlrcpp::Any Assembler::visitPlugin(kqasmParser::PluginContext *ctx) {
     
     auto plugin_name = ctx->STR()->getText();
 
-    instructions.push_back([plugin_name, ctrl, adj, qubit_idx, args, ctrl_idx](Simulator &simulator, size_t&) {
+    instructions.push_back([plugin_name, ctrl, adj, qubit_idx, args, ctrl_idx](Simulator &simulator, size_t&, label_t&) {
         std::stringstream path_ss{plugin_path};
         std::string path;
         boost::shared_ptr<ket::bitwise_api> plugin;
@@ -246,7 +245,7 @@ antlrcpp::Any Assembler::visitInt_infix(kqasmParser::Int_infixContext *ctx) {
     auto right_idx = get_size_t(ctx->right->getText());
     auto op = ctx->op->getText();
     
-    instructions.push_back([result, left_idx, right_idx, op](Simulator &simulator, size_t&){
+    instructions.push_back([result, left_idx, right_idx, op](Simulator &simulator, size_t&, label_t&){
         auto left = simulator.get_i64(left_idx);
         auto right = simulator.get_i64(right_idx);
         switch (op[0]) {
@@ -320,7 +319,7 @@ antlrcpp::Any Assembler::visitInt_const(kqasmParser::Int_constContext *ctx) {
     std::int64_t val = ctx->SIG()? -uval : uval;
     auto idx = get_size_t(ctx->I64()->getText());
    
-    instructions.push_back([idx, val](Simulator &simulator, size_t&){
+    instructions.push_back([idx, val](Simulator &simulator, size_t&, label_t&){
         simulator.set_i64(idx, val);
     });
    
@@ -330,7 +329,7 @@ antlrcpp::Any Assembler::visitInt_const(kqasmParser::Int_constContext *ctx) {
 antlrcpp::Any Assembler::visitSet(kqasmParser::SetContext *ctx) {
     auto i64_in_idx = get_size_t(ctx->target->getText());
     auto i64_value_idx = get_size_t(ctx->from->getText());
-    instructions.push_back([i64_in_idx, i64_value_idx](Simulator &simulator, size_t&) {
+    instructions.push_back([i64_in_idx, i64_value_idx](Simulator &simulator, size_t&, label_t&) {
         simulator.set_i64(i64_in_idx, simulator.get_i64(i64_value_idx));
     });
 

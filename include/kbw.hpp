@@ -25,10 +25,12 @@
 #pragma once 
 #include "simulator.hpp"
 
-
 #ifndef SWIG
 inline std::string plugin_path;
 #endif
+
+using label_t = boost::unordered_map<std::string, size_t>;
+using inst_t = std::vector<std::function<void(Simulator&, size_t&, label_t&)>>;
 
 void set_plugin_path(const std::string &path);
 std::string get_plugin_path();
@@ -48,7 +50,7 @@ public:
     std::vector<std::complex<double>> get_dump_amplitude(size_t idx, std::uint64_t state);
 
 private:
-    std::vector<std::function<void(Simulator&, size_t&)>> instructions; 
-    boost::unordered_map<std::string, size_t> labels;
+    inst_t instructions; 
+    label_t labels;
     Simulator simulator;
 };

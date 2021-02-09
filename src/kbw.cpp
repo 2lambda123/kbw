@@ -56,7 +56,7 @@ kbw::kbw(const std::string& kqasm) {
 
 void kbw::run() {
    for (size_t pc = 0; pc < instructions.size(); pc++) {
-       instructions[pc](simulator, pc);
+       instructions[pc](simulator, pc, labels);
    }
 }
 

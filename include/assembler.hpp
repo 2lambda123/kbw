@@ -27,12 +27,11 @@
 #include <boost/unordered_map.hpp>
 #include <vector>
 #include <functional>
-#include "simulator.hpp"
+#include "kbw.hpp"
 
 class Assembler : public kqasmBaseVisitor {
 public:
-    Assembler(std::vector<std::function<void(Simulator&, size_t&)>> &instructions, 
-              boost::unordered_map<std::string, size_t> &labels);
+    Assembler(inst_t &instructions, label_t &labels);
     
     virtual antlrcpp::Any visitEntry(kqasmParser::EntryContext *ctx) override;
     virtual antlrcpp::Any visitGate(kqasmParser::GateContext *ctx) override;
@@ -51,8 +50,8 @@ public:
     virtual antlrcpp::Any visitCtrl(kqasmParser::CtrlContext *ctx) override;
 
 private:
-    std::vector<std::function<void(Simulator&, size_t&)>> &instructions; 
-    boost::unordered_map<std::string, size_t> &labels;
+    inst_t &instructions; 
+    label_t &labels;
 
     inline size_t get_size_t(std::string s) const {
         std::stringstream ss;

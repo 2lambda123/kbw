@@ -5,6 +5,7 @@ from math import ceil
 from os.path import dirname
 from random import randint
 from struct import pack, unpack
+from os import environ
 from multiprocessing import Process
 import argparse
 import socket
@@ -21,6 +22,7 @@ def client(client, address):
     print('\tConnected by', address, sep='\t')
 
     set_plugin_path(plugin_path)
+    environ['KET_PYCALL'] = plugin_path+'/ket_pycall_interpreter'
     seed = randint(0, 2**31)
     set_seed(seed)
     print('\tseed', seed, sep='\t')

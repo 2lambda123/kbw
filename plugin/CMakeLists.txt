@@ -16,6 +16,20 @@ target_link_libraries(ket_diag ket_bitwise)
 install(TARGETS ket_diag
         LIBRARY DESTINATION kbw)
 
+add_library(ket_pycall SHARED ket_pycall.cpp)
+
+target_link_libraries(ket_pycall ket_bitwise CONAN_PKG::boost)
+
+install(TARGETS ket_pycall
+        LIBRARY DESTINATION kbw)
+
+add_executable(ket_pycall_interpreter ket_pycall_interpreter.cpp)
+
+target_link_libraries(ket_pycall_interpreter ${PYTHON_LIBRARIES})
+
+install(TARGETS ket_pycall_interpreter
+        RUNTIME DESTINATION kbw)
+
 #### Begin example #######################
 add_library(example SHARED example.cpp)
 target_link_libraries(example ket_bitwise)
