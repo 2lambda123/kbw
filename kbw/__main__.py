@@ -89,7 +89,7 @@ def client(client, address):
     exit(0)
 
 def main():
-    description = 'Ket Biswise Simulator server'
+    description = 'Ket Bitwise Simulator server'
     print(description)
     print('============================\n')
     
