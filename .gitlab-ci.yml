@@ -37,7 +37,7 @@ before_script:
 
 appimage:
   script:
-    - sed 's/VERSION/'$(git rev-parse --short HEAD)'/' AppImageBuilder.yml.in > AppImageBuilder.yml
+    - sed 's/VERSION/"'$(git rev-parse --short HEAD)'"/' AppImageBuilder.yml.in > AppImageBuilder.yml
     - appimage-builder --skip-test
   artifacts:
     paths:
