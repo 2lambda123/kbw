@@ -21,65 +21,77 @@ class Command(Enum):
 def client(client, address):
     print('\tConnected by', address, sep='\t')
 
+    ##### Set plugin path ####
     set_plugin_path(plugin_path)
     environ['KET_PYCALL'] = plugin_path+'/ket_pycall_interpreter'
+    ##########################
+
+    #### Set seed ####
     seed = randint(0, 2**31)
     set_seed(seed)
-    print('\tseed', seed, sep='\t')
+    print('\tSeed', seed, sep='\t')
+    ##################
 
     print('\tWaiting KQASM...', address, sep='\t')
     
+    #### Get KQASM size ####
     file_size, =  unpack('<I', client.recv(4))
     client.sendall(ACK)
-    print('\tKQASM size\t', file_size,address, sep='\t')
-    
+    print('\tKQASM size\t', str(file_size)+"B" ,address, sep='\t')
+    ########################
+
+    #### Get KQASM ####
     kqasm_buffer = bytearray()
     for _ in range(ceil(file_size/buffer_size)):
         data = client.recv(buffer_size)
         kqasm_buffer += data
-    
     kqasm_file = kqasm_buffer.decode()
+    ###################
 
+    #### Run ####
     print('\tRunning KQASM...', address, sep='\t')
     quantum_execution = kbw(kqasm_file)
     quantum_execution.run()
 
     client.sendall(ACK)
+    ############
     
     while True:
         print('\tWaiting command...', address, sep='\t')
 
+        #### Get command ####
         command = Command(*unpack('<b', client.recv(1)))
         client.sendall(ACK)
         print('\t\tProcessing', command, address, sep='\t')
+        #####################
 
-        if command == Command.GET:
+        if command == Command.GET: # Get measurement
             idx, = unpack('<Q', client.recv(8))
             result = quantum_execution.get_result(idx)
 
             print('\t\tSending result', idx, result, address, sep='\t')
             client.sendall(pack('<Q', result))
 
-        elif command == Command.DUMP:
+        elif command == Command.DUMP: # Get dump
+            #### Get dump index ####
             idx, = unpack('<Q', client.recv(8))
+            client.sendall(ACK)
+            print('\t\tSending dump', idx, address, sep='\t')
+            ##################
+
+            #### Perpare dump ####
             result = quantum_execution.get_dump_states(idx)
-
-            print('\t\tSending dump', idx, result, address, sep='\t')
-            client.sendall(pack('<Q',  len(result)))
-            
-            client.recv(1)
-
+            buffer = pack('<Q', len(result))
             for i in result:
                 amplitude = quantum_execution.get_dump_amplitude(idx, i)
-                client.sendall(pack('<QQ', i, len(amplitude)))
-                client.recv(1)                
+                buffer += pack('<QQ', i, len(amplitude))
                 
-                print('\t\t\tSending amplitude', i, amplitude, address, sep='\t')
-
                 for a in amplitude:
-                    cx = pack('<dd', a.real, a.imag)
-                    client.sendall(cx)
-                    client.recv(1)
+                    buffer += pack('<dd', a.real, a.imag)
+            #####################
+             
+            print('\t\tdump size', str(len(buffer)/2**10)+"kB", address, sep='\t')
+            client.sendall(buffer)
             
         elif command == Command.EXIT:
             break
