@@ -25,6 +25,7 @@
 #include "../include/ket_bitwise.hpp"
 #include <boost/container/map.hpp>
 #include <random>
+#include <algorithm>
 
 using namespace ket;
 using namespace std::complex_literals;
@@ -354,6 +355,12 @@ dump_t Bitwise::dump(size_t size) const {
     for (auto &i : qbits) {
         auto k = i.first[0] & ((1ul << size) -1);
         state[k].push_back(i.second);
+    }
+    for (auto &i : state) {
+        std::sort(i.second.begin(), i.second.end(), [](std::complex<double> a, std::complex<double> b) {
+            if (a.real() == b.real()) return a.imag() < b.imag();
+            else return a.real() < b.real();
+        });
     }
     
     return state;

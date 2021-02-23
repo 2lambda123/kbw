@@ -24,6 +24,7 @@
 
 #pragma once 
 #include "simulator.hpp"
+#include <Python.h>
 
 #ifndef SWIG
 inline std::string plugin_path;
@@ -48,6 +49,8 @@ public:
 
     std::vector<unsigned long long> get_dump_states(size_t idx);
     std::vector<std::complex<double>> get_dump_amplitude(size_t idx, std::uint64_t state);
+    
+    PyObject* get_dump_base64(size_t idx);
 
 private:
     inst_t instructions; 

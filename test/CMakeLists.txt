@@ -28,4 +28,4 @@ add_executable(exec_kqasm
 set_target_properties(exec_kqasm PROPERTIES 
                       CXX_STANDARD 17)
 
-target_link_libraries(exec_kqasm CONAN_PKG::boost antlr4_static dl Threads::Threads)
+target_link_libraries(exec_kqasm CONAN_PKG::boost antlr4_static dl Threads::Threads ${PYTHON_LIBRARIES})

@@ -75,23 +75,12 @@ def client(client, address):
         elif command == Command.DUMP: # Get dump
             #### Get dump index ####
             idx, = unpack('<Q', client.recv(8))
-            client.sendall(ACK)
-            print('\t\tSending dump', idx, address, sep='\t')
+            dump = quantum_execution.get_dump_base64(idx)
+            print('\t\tSending dump', idx, str(len(dump)/2**10)+"kB", address, sep='\t')
+            client.sendall(pack('<Q', len(dump)))
             ##################
 
-            #### Perpare dump ####
-            result = quantum_execution.get_dump_states(idx)
-            buffer = pack('<Q', len(result))
-            for i in result:
-                amplitude = quantum_execution.get_dump_amplitude(idx, i)
-                buffer += pack('<QQ', i, len(amplitude))
-                
-                for a in amplitude:
-                    buffer += pack('<dd', a.real, a.imag)
-            #####################
-             
-            print('\t\tdump size', str(len(buffer)/2**10)+"kB", address, sep='\t')
-            client.sendall(buffer)
+            client.sendall(dump)
             
         elif command == Command.EXIT:
             break

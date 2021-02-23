@@ -22,12 +22,16 @@
  * SOFTWARE.
  */
 
-#include "antlr4-runtime.h"
-#include "kqasmLexer.h"
-#include "kqasmParser.h"
-#include "kqasmBaseVisitor.h"
 #include "../include/assembler.hpp"
 #include "../include/kbw.hpp"
+#include "antlr4-runtime.h"
+#include "kqasmBaseVisitor.h"
+#include "kqasmLexer.h"
+#include "kqasmParser.h"
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/serialization/boost_unordered_map.hpp>
+#include <boost/serialization/complex.hpp>
+#include <boost/serialization/vector.hpp>
 
 void set_plugin_path(const std::string &path) {
     plugin_path = path;
@@ -77,4 +81,13 @@ std::vector<unsigned long long> kbw::get_dump_states(size_t idx) {
 
 std::vector<std::complex<double>> kbw::get_dump_amplitude(size_t idx, std::uint64_t state) {
     return simulator.get_dump(idx)[state];
+}
+
+PyObject* kbw::get_dump_base64(size_t idx) {
+    std::stringstream stream;
+    boost::archive::binary_oarchive oarchive{stream};
+
+    oarchive << simulator.get_dump(idx);
+    
+    return PyBytes_FromStringAndSize(stream.str().c_str(), stream.str().size());
 }
