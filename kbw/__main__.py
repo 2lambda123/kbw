@@ -29,7 +29,7 @@ def client(client, address):
     #### Set seed ####
     seed = randint(0, 2**31)
     set_seed(seed)
-    print('\tSeed', seed, sep='\t')
+    print('\tSeed', seed, address, sep='\t')
     ##################
 
     print('\tWaiting KQASM...', address, sep='\t')
