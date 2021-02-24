@@ -26,7 +26,6 @@
 #include "../include/simulator.hpp"
 #include "../include/kbw.hpp"
 #include <boost/dll/import.hpp> 
-#include <iostream>
 
 Assembler::Assembler(inst_t &instructions, label_t &labels) :
     instructions{instructions},

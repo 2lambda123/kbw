@@ -29,8 +29,8 @@
 #include "kqasmLexer.h"
 #include "kqasmParser.h"
 #include <boost/archive/binary_oarchive.hpp>
-#include <boost/serialization/boost_unordered_map.hpp>
 #include <boost/serialization/complex.hpp>
+#include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
 
 void set_plugin_path(const std::string &path) {
@@ -83,11 +83,11 @@ std::vector<std::complex<double>> kbw::get_dump_amplitude(size_t idx, std::uint6
     return simulator.get_dump(idx)[state];
 }
 
-PyObject* kbw::get_dump_base64(size_t idx) {
+std::string kbw::get_dump(size_t idx) {
     std::stringstream stream;
     boost::archive::binary_oarchive oarchive{stream};
 
     oarchive << simulator.get_dump(idx);
     
-    return PyBytes_FromStringAndSize(stream.str().c_str(), stream.str().size());
+    return stream.str();
 }

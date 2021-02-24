@@ -25,14 +25,15 @@
 //! \file ket_bitwise.hpp
 
 #pragma once
-#include <iostream>
-#include <boost/config.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/functional/hash.hpp>
-#include <complex>
-#include <string>
-#include <vector>
 #include <array>
+#include <boost/config.hpp>
+#include <boost/functional/hash.hpp>
+#include <boost/unordered_map.hpp>
+#include <complex>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace ket { 
     using complex = std::complex<double>; //!< Complex number.
@@ -83,7 +84,7 @@ namespace ket {
 
     using map = boost::unordered_map<Index, complex>; //!< Quantum state hashmap.
 
-    using dump_t = boost::unordered_map<std::uint64_t, std::vector<complex>>; //! Quantum state dump.
+    using dump_t = std::unordered_map<std::uint64_t, std::vector<complex>>; //! Quantum state dump.
 
     /*! \brief Store and manipulate the quantum state hashmap.
      *  \class Bitwise

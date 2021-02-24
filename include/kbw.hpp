@@ -24,14 +24,13 @@
 
 #pragma once 
 #include "simulator.hpp"
-#include <Python.h>
 
 #ifndef SWIG
 inline std::string plugin_path;
-#endif
 
 using label_t = boost::unordered_map<std::string, size_t>;
 using inst_t = std::vector<std::function<void(Simulator&, size_t&, label_t&)>>;
+#endif
 
 void set_plugin_path(const std::string &path);
 std::string get_plugin_path();
@@ -50,7 +49,7 @@ public:
     std::vector<unsigned long long> get_dump_states(size_t idx);
     std::vector<std::complex<double>> get_dump_amplitude(size_t idx, std::uint64_t state);
     
-    PyObject* get_dump_base64(size_t idx);
+    std::string get_dump(size_t idx);
 
 private:
     inst_t instructions; 

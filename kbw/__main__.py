@@ -75,8 +75,8 @@ def client(client, address):
         elif command == Command.DUMP: # Get dump
             #### Get dump index ####
             idx, = unpack('<Q', client.recv(8))
-            dump = quantum_execution.get_dump_base64(idx)
-            print('\t\tSending dump', idx, str(len(dump)/2**10)+"kB", address, sep='\t')
+            dump = quantum_execution.get_dump(idx)
+            print('\t\tSending dump', idx, str(len(dump)/2**20)+"MB", address, sep='\t')
             client.sendall(pack('<Q', len(dump)))
             ##################
 

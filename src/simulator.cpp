@@ -23,9 +23,7 @@
  */
 
 #include "../include/simulator.hpp"
-#include <boost/asio/post.hpp>
-#include <iostream>
-#include <thread>
+#include <boost/smart_ptr.hpp>
 
 using namespace ket;
 

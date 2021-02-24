@@ -57,4 +57,9 @@
   }
 %}
 
+%typemap(out) std::string get_dump
+%{
+  $result = PyBytes_FromStringAndSize($1.c_str(), $1.size());
+%}
+
 %include "include/kbw.hpp"

@@ -24,10 +24,7 @@
 
 #pragma once
 #include "ket_bitwise.hpp"
-#include <boost/asio/thread_pool.hpp>
 #include <boost/unordered_set.hpp>
-#include <boost/smart_ptr.hpp>
-#include <functional>
 #include <stack>
 
 class Simulator {
