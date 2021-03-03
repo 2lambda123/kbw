@@ -70,7 +70,7 @@ def client(client, address):
             result = quantum_execution.get_result(idx)
 
             print('\t\tSending result', idx, result, address, sep='\t')
-            client.sendall(pack('<Q', result))
+            client.sendall(pack('<q', result))
 
         elif command == Command.DUMP: # Get dump
             #### Get dump index ####
