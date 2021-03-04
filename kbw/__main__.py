@@ -111,8 +111,8 @@ def main():
     print('\tPlugin PATH', plugin_path, sep='\t')
 
     server = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-    server.bind((socket.gethostbyname(args.b), args.p))
-    print('\tBind\t\t', socket.gethostbyname(args.b), ':', args.p, sep='')
+    server.bind((args.b, args.p))
+    print('\tBind\t\t', args.b, ':', args.p, sep='')
 
     print("\nUse Ctrl+c to stop the server\n")
 
