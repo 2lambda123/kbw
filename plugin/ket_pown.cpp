@@ -26,35 +26,36 @@
 #include <sstream>
 
 using namespace ket;
+ 
+inline size_t pown(size_t x, size_t reg1, size_t N) { 
+    if (reg1 == 0) return 1;
 
-size_t pown(size_t a, size_t x, size_t n) {
-    size_t result = 1 ;
-
-    while (x--) {
-       result *= a;
-       result %= n;
+    size_t y = 1;
+    for (; reg1 > 1; reg1 >>=  1) {
+        if (reg1 & 1) y = (y*x)%N;
+        x = (x*x)%N;
     }
-
-    return result;
+    
+    return (x*y)%N;
 }
 
 class ket_pown : public bitwise_api {
 public:
     void run(map &qbits, size_t size, std::string args, bool adj, size_t ctrl) const {
-        size_t l, a, n;
+        size_t L, x, N;
         std::stringstream ss{args};
-        ss >> l // #n bits of n
-           >> a >> n;
+        ss >> L // #n bits of N
+           >> x >> N;
 
         map new_map;
 
         for (auto &i : qbits) {
-            auto val = i.first[0] & ((1ul << size)-1);
-            auto x = val >> l;
-            auto y = pown(a, x, n);
-            val |= y;
+            auto reg1_reg2 = i.first[0] & ((1ul << size)-1);
+            auto reg1 = reg1_reg2 >> L;
+            auto reg2 = pown(x, reg1, N);
+            reg1_reg2 |= reg2;
             auto j = i.first;
-            j[0] = val;
+            j[0] = reg1_reg2;
 
             new_map[j] = i.second;                        
         }
