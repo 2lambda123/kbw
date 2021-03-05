@@ -41,15 +41,16 @@ size_t pown(size_t a, size_t x, size_t n) {
 class ket_pown : public bitwise_api {
 public:
     void run(map &qbits, size_t size, std::string args, bool adj, size_t ctrl) const {
-        size_t n, a;
+        size_t l, a, n;
         std::stringstream ss{args};
-        ss >> n >> a;
+        ss >> l // #n bits of n
+           >> a >> n;
 
         map new_map;
 
         for (auto &i : qbits) {
             auto val = i.first[0] & ((1ul << size)-1);
-            auto x = val >> (size/2);
+            auto x = val >> l;
             auto y = pown(a, x, n);
             val |= y;
             auto j = i.first;
