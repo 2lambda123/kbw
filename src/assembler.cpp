@@ -103,7 +103,17 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
             }
             break;
         case 'R':
-            simulator.rz(args[0], qbit_idx, ctrl);
+            switch (gate[1]) {
+            case 'X':
+                simulator.u3(args[0], -M_PI_2, M_PI_2, qbit_idx, ctrl); 
+                break;
+            case 'Y':
+                simulator.u3(args[0], 0, 0, qbit_idx, ctrl); 
+                break;
+            case 'Z':
+                simulator.rz(args[0], qbit_idx, ctrl);
+                break;
+            }
             break;
         }
     });

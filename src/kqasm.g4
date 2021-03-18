@@ -29,7 +29,8 @@ entry : (instruction ENDL+)* EOF;
 instruction : ctrl? gate=('X'|'Y'|'Z'
                          |'H'|'S'|'SD'
                          |'T'|'TD'|'U1'
-                         |'U2'|'U3'|'RZ') ('(' DOUBLE+ ')')? QBIT # gate
+                         |'U2'|'U3'|'RZ'
+                         |'RX'|'RY' ) ('(' DOUBLE+ ')')? QBIT     # gate
             | ctrl? 'PLUGIN' ADJ? STR QBIT+ ARGS                  # plugin
             | 'ALLOC' DIRTY? QBIT                                 # alloc
             | 'BR' I64 then=LABEL otherwise=LABEL                 # branch
