@@ -26,18 +26,18 @@ grammar kqasm;
 
 entry : (instruction ENDL+)* EOF;
 
-instruction : ctrl? gate_name arg_list? QBIT                        # gate
-            | ctrl? 'PLUGIN' ADJ? name=STR qubits_list ARGS          # plugin
-            | 'ALLOC' DIRTY? QBIT                                   # alloc
-            | 'BR' INT then=LABEL otherwise=LABEL                # branch
-            | 'DUMP' qubits_list                                     # dump
-            | 'FREE' DIRTY? QBIT                                    # free
-            | 'JUMP' LABEL                                           # jump
-            | 'LABEL' LABEL                                          # label
-            | 'MEASURE' INT qubits_list                          # measure
-            | 'SET' target=INT from=INT                      # set
-            | 'INT' result=INT left=INT bin_op right=INT # binary_op
-            | 'INT' INT SIG? UINT                                # const_int
+instruction : ctrl? gate_name arg_list? QBIT                # gate
+            | ctrl? 'PLUGIN' ADJ? name=STR qubits_list ARGS # plugin
+            | 'ALLOC' DIRTY? QBIT                           # alloc
+            | 'BR' INT then=LABEL otherwise=LABEL           # branch
+            | 'DUMP' qubits_list                            # dump
+            | 'FREE' DIRTY? QBIT                            # free
+            | 'JUMP' LABEL                                  # jump
+            | 'LABEL' LABEL                                 # label
+            | 'MEASURE' INT qubits_list                     # measure
+            | 'SET' target=INT from=INT                     # set
+            | 'INT' result=INT left=INT bin_op right=INT    # binary_op
+            | 'INT' INT SIG? UINT                           # const_int
             ;
 
 
