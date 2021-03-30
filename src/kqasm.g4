@@ -26,44 +26,40 @@ grammar kqasm;
 
 entry : (instruction ENDL+)* EOF;
 
-instruction : ctrl? gate=('X'|'Y'|'Z'
-                         |'H'|'S'|'SD'
-                         |'T'|'TD'|'U1'
-                         |'U2'|'U3'|'RZ'
-                         |'RX'|'RY' ) ('(' DOUBLE+ ')')? QBIT     # gate
-            | ctrl? 'PLUGIN' ADJ? STR QBIT+ ARGS                  # plugin
-            | 'ALLOC' DIRTY? QBIT                                 # alloc
-            | 'BR' I64 then=LABEL otherwise=LABEL                 # branch
-            | 'DUMP' QBIT+                                        # dump
-            | 'FREE' DIRTY? QBIT                                  # free
-            | 'JUMP' LABEL                                        # jump
-            | 'LABEL' LABEL                                       # label
-            | 'MEASURE' QBIT                                      # measure
-            | 'SET' target=I64 from=I64                           # set
-            | new_int                                             # int_instr
+instruction : ctrl? gate_name arg_list? QBIT                        # gate
+            | ctrl? 'PLUGIN' ADJ? name=STR qubits_list ARGS          # plugin
+            | 'ALLOC' DIRTY? QBIT                                   # alloc
+            | 'BR' INT then=LABEL otherwise=LABEL                # branch
+            | 'DUMP' qubits_list                                     # dump
+            | 'FREE' DIRTY? QBIT                                    # free
+            | 'JUMP' LABEL                                           # jump
+            | 'LABEL' LABEL                                          # label
+            | 'MEASURE' INT qubits_list                          # measure
+            | 'SET' target=INT from=INT                      # set
+            | 'INT' result=INT left=INT bin_op right=INT # binary_op
+            | 'INT' INT SIG? UINT                                # const_int
             ;
 
-ctrl : 'CTRL' QBIT+;
 
-new_int : 'INT' result=I64 left=I64 op=('=='|'!='|'>'
-                                       |'>='|'<'|'<='
-                                       |'+'|'-'|'*'
-                                       |'/'|'<<'|'>>'
-                                       |'and'|'xor'|'or') right=I64 # int_infix
-        | 'INT' I64 ex=('ZE'|'SE') BIT+                             # int_ex
-        | 'INT' I64 SIG? UINT                                       # int_const
-        ;
+ctrl : 'CTRL' qubits_list ',';
+
+qubits_list : '[' QBIT (',' QBIT)* ']';
+
+gate_name : 'X'|'Y'|'Z' |'H'|'S'|'SD'|'T'|'TD'|'U1'|'U2'|'U3'|'RZ'|'RX'|'RY';
+
+arg_list : '(' DOUBLE (',' DOUBLE)* ')';
+
+bin_op : '=='|'!='|'>'|'>='|'<'|'<='|'+'|'-'|'*' |'/'|'<<'|'>>'|'and'|'xor'|'or';
 
 ADJ   : '!';
 ARGS  : '"'~["]+'"';
-BIT   : 'c'UINT;
 DIRTY : 'DIRTY';
+UINT  : [0-9]+;
+QBIT  : 'q'UINT;
+INT   : 'i'UINT;
 DOUBLE: '-'?[0-9]+'.'[0-9]*;
 ENDL  : '\r''\n'?|'\n';
-I64   : 'i'UINT;
 LABEL : '@'STR;
-QBIT  : 'q'UINT;
 SIG   : '-';
 STR   : [a-zA-Z]+[._0-9a-zA-Z]*;
-UINT  : [0-9]+;
 WS    : [ \t]+ -> skip;

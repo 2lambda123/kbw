@@ -35,30 +35,24 @@ public:
     
     virtual antlrcpp::Any visitEntry(kqasmParser::EntryContext *ctx) override;
     virtual antlrcpp::Any visitGate(kqasmParser::GateContext *ctx) override;
-    virtual antlrcpp::Any visitAlloc(kqasmParser::AllocContext *ctx) override;
-    virtual antlrcpp::Any visitFree(kqasmParser::FreeContext *ctx) override;
-    virtual antlrcpp::Any visitMeasure(kqasmParser::MeasureContext *ctx) override;
-    virtual antlrcpp::Any visitLabel(kqasmParser::LabelContext *ctx) override;
-    virtual antlrcpp::Any visitBranch(kqasmParser::BranchContext *ctx) override;
-    virtual antlrcpp::Any visitJump(kqasmParser::JumpContext *ctx) override;
-    virtual antlrcpp::Any visitInt_ex(kqasmParser::Int_exContext *ctx) override;
-    virtual antlrcpp::Any visitDump(kqasmParser::DumpContext *ctx) override;
     virtual antlrcpp::Any visitPlugin(kqasmParser::PluginContext *ctx) override;
-    virtual antlrcpp::Any visitInt_infix(kqasmParser::Int_infixContext *ctx) override;
-    virtual antlrcpp::Any visitInt_const(kqasmParser::Int_constContext *ctx) override;
+    virtual antlrcpp::Any visitAlloc(kqasmParser::AllocContext *ctx) override;
+    virtual antlrcpp::Any visitBranch(kqasmParser::BranchContext *ctx) override;
+    virtual antlrcpp::Any visitDump(kqasmParser::DumpContext *ctx) override;
+    virtual antlrcpp::Any visitFree(kqasmParser::FreeContext *ctx) override;
+    virtual antlrcpp::Any visitJump(kqasmParser::JumpContext *ctx) override;
+    virtual antlrcpp::Any visitLabel(kqasmParser::LabelContext *ctx) override;
+    virtual antlrcpp::Any visitMeasure(kqasmParser::MeasureContext *ctx) override;
     virtual antlrcpp::Any visitSet(kqasmParser::SetContext *ctx) override;
+    virtual antlrcpp::Any visitBinary_op(kqasmParser::Binary_opContext *ctx) override;
+    virtual antlrcpp::Any visitConst_int(kqasmParser::Const_intContext *ctx) override;
     virtual antlrcpp::Any visitCtrl(kqasmParser::CtrlContext *ctx) override;
+    virtual antlrcpp::Any visitQubits_list(kqasmParser::Qubits_listContext *ctx) override;
+    virtual antlrcpp::Any visitGate_name(kqasmParser::Gate_nameContext *ctx) override;
+    virtual antlrcpp::Any visitArg_list(kqasmParser::Arg_listContext *ctx) override;
+    virtual antlrcpp::Any visitBin_op(kqasmParser::Bin_opContext *ctx) override;
 
 private:
     inst_t &instructions; 
     label_t &labels;
-
-    inline size_t get_size_t(std::string s) const {
-        std::stringstream ss;
-        auto str = s.substr(1, s.size()-1);  
-        ss << str;
-        size_t idx;
-        ss >> idx;
-        return idx;
-    }
 };
