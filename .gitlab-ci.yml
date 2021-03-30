@@ -14,6 +14,7 @@ before_script:
       g++ 
       gcc 
       git
+      gtk-update-icon-cache
       libgdk-pixbuf2.0-dev 
       libssl-dev 
       make 
