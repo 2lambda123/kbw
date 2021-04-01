@@ -66,15 +66,19 @@ int main(int argc, const char* argv[]) {
         std::cerr << e.what() << std::endl;
         exit(1);
     }
- 
+    
+    std::cout << "Input KQASM: " << input_path << std::endl; 
     std::ifstream in_file(input_path);
     std::stringstream kqasm_buffer;
     kqasm_buffer << in_file.rdbuf();
     
     kbw qc{kqasm_buffer.str()};
     
+    std::cout << "Simulating" << std::endl;
     qc.run();
 
+    std::cout << "Results:" << std::endl;
+    std::cout << "========" << std::endl;
     std::cout << qc.get_results();
 
     return 0;    
