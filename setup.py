@@ -23,7 +23,7 @@ setup_requirements = ['scikit-build>=0.11.1',
                       ]
 
 setup (name = 'kbw',
-       version='0.1b1',
+       version='0.1b2',
        cmake_source_dir='.',
        author='Evandro Chagas Ribeiro da Rosa',
        author_email='evandro.crr@posgrad.ufsc.br',
@@ -39,5 +39,6 @@ setup (name = 'kbw',
                     'Intended Audience :: Science/Research',
                     'Topic :: Scientific/Engineering',
                     'License :: OSI Approved :: MIT License',
-                   ]
+                   ],
+        entry_points={'console_scripts': ['kbw = kbw.__main__:main']},
        )
