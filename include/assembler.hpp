@@ -31,9 +31,11 @@
 
 class Assembler : public kqasmBaseVisitor {
 public:
-    Assembler(inst_t &instructions, label_t &labels);
+    Assembler(block_t &blocks, next_block_t &next_block, std::string &end_block);
     
-    virtual antlrcpp::Any visitEntry(kqasmParser::EntryContext *ctx) override;
+    virtual antlrcpp::Any visitBlock(kqasmParser::BlockContext *ctx) override;
+    virtual antlrcpp::Any visitEnd_block(kqasmParser::End_blockContext *ctx) override;
+
     virtual antlrcpp::Any visitGate(kqasmParser::GateContext *ctx) override;
     virtual antlrcpp::Any visitPlugin(kqasmParser::PluginContext *ctx) override;
     virtual antlrcpp::Any visitAlloc(kqasmParser::AllocContext *ctx) override;
@@ -53,6 +55,7 @@ public:
     virtual antlrcpp::Any visitBin_op(kqasmParser::Bin_opContext *ctx) override;
 
 private:
-    inst_t &instructions; 
-    label_t &labels;
+    block_t &blocks; 
+    next_block_t &next_block;
+    std::string &end_block;
 };

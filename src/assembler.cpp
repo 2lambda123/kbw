@@ -35,16 +35,45 @@ inline size_t get_size_t(std::string token) {
     return index;
 }
 
-Assembler::Assembler(inst_t &instructions, label_t &labels) :
-    instructions{instructions},
-    labels{labels}
+Assembler::Assembler(block_t &blocks, next_block_t &next_block, std::string &end_block) :
+    blocks{blocks},
+    next_block{next_block},
+    end_block{end_block} 
     {}
 
-antlrcpp::Any Assembler::visitEntry(kqasmParser::EntryContext *ctx) {
-    visitChildren(ctx);
-    instructions.push_back([](Simulator&, size_t&, label_t&) {return;});
+antlrcpp::Any Assembler::visitBlock(kqasmParser::BlockContext *ctx) {
+    auto label = visit(ctx->label()).as<std::string>();
+    
+    std::vector<std::function<void(Simulator&)>> instructions;
+
+    for (auto inst : ctx->instruction()) 
+        instructions.push_back(visit(inst).as<std::function<void(Simulator&)>>());
+
+    blocks[label] = [instructions](Simulator& sim) {
+        for (auto inst : instructions) inst(sim);
+    }; 
+    
+    next_block[label] = visit(ctx->end_instruction()).as<std::function<std::string(Simulator&)>>();
+    
     return 0;
-} 
+}
+
+antlrcpp::Any Assembler::visitEnd_block(kqasmParser::End_blockContext *ctx) {
+    auto label = visit(ctx->label()).as<std::string>();
+    
+    std::vector<std::function<void(Simulator&)>> instructions;
+
+    for (auto inst : ctx->instruction()) 
+        instructions.push_back(visit(inst).as<std::function<void(Simulator&)>>());
+
+    blocks[label] = [instructions](Simulator& sim) {
+        for (auto inst : instructions) inst(sim);
+    }; 
+    
+    end_block = label;
+    
+    return 0;
+}
 
 antlrcpp::Any Assembler::visitCtrl(kqasmParser::CtrlContext *ctx) {
     return visit(ctx->qubits_list());
@@ -60,89 +89,51 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
     if (ctx->arg_list()) args = visit(ctx->arg_list()).as<std::vector<double>>();
 
     auto gate = visit(ctx->gate_name()).as<std::string>();
+    
+    return std::function<void(Simulator&)>{[ctrl, qbit_idx, gate, args] (Simulator &simulator) {
+        const boost::unordered_map<std::string, std::function<void(void)>> gate_map{
+            {"X", [&]() {simulator.x(qbit_idx, ctrl);}},
+            {"Y", [&]() {simulator.y(qbit_idx, ctrl);}},
+            {"Z", [&]() {simulator.z(qbit_idx, ctrl);}},
+            {"H", [&]() {simulator.h(qbit_idx, ctrl);}},
+            {"S", [&]() {simulator.s(qbit_idx, ctrl);}},
+            {"SD", [&]() {simulator.sd(qbit_idx, ctrl);}},
+            {"T", [&]() {simulator.t(qbit_idx, ctrl);}},
+            {"TD", [&]() {simulator.td(qbit_idx, ctrl);}},
+            {"RX", [&]() {simulator.u3(args[0], -M_PI_2, M_PI_2, qbit_idx, ctrl);}},
+            {"RY", [&]() {simulator.u3(args[0], 0, 0, qbit_idx, ctrl);}},
+            {"RZ", [&]() {simulator.rz(args[0], qbit_idx, ctrl);}},
+            {"U1", [&]() {simulator.u1(args[0], qbit_idx, ctrl);}},
+            {"U2", [&]() {simulator.u2(args[0], args[1], qbit_idx, ctrl);}},
+            {"U3", [&]() {simulator.u3(args[0], args[1], args[2], qbit_idx, ctrl);}},
+        };
+        
+        gate_map.at(gate)();
 
-    instructions.push_back([ctrl, qbit_idx, gate, args] (Simulator &simulator, size_t&, label_t&) {
-        switch (gate[0]) {
-        case 'X':
-            simulator.x(qbit_idx, ctrl);
-            break;
-        case 'Y':
-            simulator.y(qbit_idx, ctrl);
-            break;
-        case 'Z':
-            simulator.z(qbit_idx, ctrl);
-            break;
-        case 'H':
-            simulator.h(qbit_idx, ctrl);
-            break;
-        case 'S':
-            if (gate.size() == 1) 
-                simulator.s(qbit_idx, ctrl);
-            else
-                simulator.sd(qbit_idx, ctrl);
-            break;
-        case 'T':
-            if (gate.size() == 1) 
-                simulator.t(qbit_idx, ctrl);
-            else
-                simulator.td(qbit_idx, ctrl);
-            break;
-        case 'U':
-            switch (gate[1]) {
-            case '1':
-                simulator.u1(args[0], qbit_idx, ctrl); 
-                break;
-            case '2':
-                simulator.u2(args[0], args[1], qbit_idx, ctrl); 
-                break;
-            case '3':
-                simulator.u3(args[0], args[1], args[2], qbit_idx, ctrl); 
-                break;
-            }
-            break;
-        case 'R':
-            switch (gate[1]) {
-            case 'X':
-                simulator.u3(args[0], -M_PI_2, M_PI_2, qbit_idx, ctrl); 
-                break;
-            case 'Y':
-                simulator.u3(args[0], 0, 0, qbit_idx, ctrl); 
-                break;
-            case 'Z':
-                simulator.rz(args[0], qbit_idx, ctrl);
-                break;
-            }
-            break;
-        }
-    });
-
-    return 0;
+    }};
 }
 
 antlrcpp::Any Assembler::visitAlloc(kqasmParser::AllocContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
     bool dirty = ctx->DIRTY();
-    instructions.push_back([qubit_idx, dirty](Simulator &simulator, size_t&, label_t&) {
+    
+    return std::function<void(Simulator&)>{[qubit_idx, dirty](Simulator &simulator) {
         simulator.alloc(qubit_idx, dirty);
-    });
-
-    return 0;
+    }};
 }
 
 antlrcpp::Any Assembler::visitFree(kqasmParser::FreeContext *ctx) {
     auto qubit_idx = get_size_t(ctx->QBIT()->getText());
     bool dirty = ctx->DIRTY();
-    instructions.push_back([qubit_idx, dirty](Simulator &simulator, size_t&, label_t&) {
+    return std::function<void(Simulator&)>{[qubit_idx, dirty](Simulator &simulator) {
         simulator.free(qubit_idx, dirty);
-    });
-
-    return 0;
+    }};
 }
 
 antlrcpp::Any Assembler::visitMeasure(kqasmParser::MeasureContext *ctx) {
     auto qubit_idx = visit(ctx->qubits_list()).as<std::vector<size_t>>();
     auto int_idx = get_size_t(ctx->INT()->getText());
-    instructions.push_back([qubit_idx, int_idx](Simulator &simulator, size_t&, label_t) {
+    return std::function<void(Simulator&)>{[qubit_idx, int_idx](Simulator &simulator) {
         for (auto i : qubit_idx)
             simulator.measure(i);
             
@@ -152,47 +143,37 @@ antlrcpp::Any Assembler::visitMeasure(kqasmParser::MeasureContext *ctx) {
             value |= simulator.get_bit(*j) << i++;
 
         simulator.set_i64(int_idx, value);    
-    });
-
-    return 0;
+    }};
 }
 
 antlrcpp::Any Assembler::visitLabel(kqasmParser::LabelContext *ctx) {
-    labels[ctx->LABEL()->getText()] = instructions.size()-1;
-    return 0;
+    return ctx->LABEL()->getText();
 }
 
 antlrcpp::Any Assembler::visitBranch(kqasmParser::BranchContext *ctx) {
     auto then = ctx->then->getText();
     auto otherwise = ctx->otherwise->getText();
     auto i64_idx = get_size_t(ctx->INT()->getText());
-    instructions.push_back([i64_idx, then, otherwise](Simulator &simulator, size_t &pc, label_t& labels) {
-        if (simulator.get_i64(i64_idx))
-            pc = labels.at(then);
-        else 
-            pc = labels.at(otherwise);
-    });
-    
-    return 0;
+
+    return std::function<std::string(Simulator&)>{[i64_idx, then, otherwise](Simulator &simulator) {
+        return simulator.get_i64(i64_idx)? then : otherwise;    
+    }};
 }
 
 antlrcpp::Any Assembler::visitJump(kqasmParser::JumpContext *ctx) {
     auto label = ctx->LABEL()->getText();
-    instructions.push_back([label](Simulator&, size_t& pc, label_t& labels) {
-        pc = labels.at(label);
-    });
-    
-    return 0;
+
+    return std::function<std::string(Simulator&)>{[label](Simulator &simulator) {
+        return label;
+    }};
 }
 
 antlrcpp::Any Assembler::visitDump(kqasmParser::DumpContext *ctx) {
     auto qubit_idx = visit(ctx->qubits_list()).as<std::vector<size_t>>();
 
-    instructions.push_back([qubit_idx](Simulator &simulator, size_t&, label_t&) {
+    return std::function<void(Simulator&)>{[qubit_idx](Simulator &simulator) {
         simulator.dump(qubit_idx);
-    });
-    
-    return 0;
+    }};
 }
 
 antlrcpp::Any Assembler::visitPlugin(kqasmParser::PluginContext *ctx) {
@@ -209,7 +190,7 @@ antlrcpp::Any Assembler::visitPlugin(kqasmParser::PluginContext *ctx) {
     
     auto plugin_name = ctx->STR()->getText();
 
-    instructions.push_back([plugin_name, ctrl, adj, qubit_idx, args, ctrl_idx](Simulator &simulator, size_t&, label_t&) {
+    return std::function<void(Simulator&)>{[plugin_name, ctrl, adj, qubit_idx, args, ctrl_idx](Simulator &simulator) {
         std::stringstream path_ss{plugin_path};
         std::string path;
         boost::shared_ptr<ket::bitwise_api> plugin;
@@ -226,9 +207,7 @@ antlrcpp::Any Assembler::visitPlugin(kqasmParser::PluginContext *ctx) {
         }
         
         simulator.apply_plugin(plugin, qubit_idx, args, adj, ctrl_idx);
-    });
-
-    return 0;
+    }};
 }
 
 antlrcpp::Any Assembler::visitBinary_op(kqasmParser::Binary_opContext *ctx) {
@@ -236,71 +215,31 @@ antlrcpp::Any Assembler::visitBinary_op(kqasmParser::Binary_opContext *ctx) {
     auto left_idx = get_size_t(ctx->left->getText());
     auto right_idx = get_size_t(ctx->right->getText());
     auto op = visit(ctx->bin_op()).as<std::string>();
-    
-    instructions.push_back([result, left_idx, right_idx, op](Simulator &simulator, size_t&, label_t&){
+
+    return std::function<void(Simulator&)>{[result, left_idx, right_idx, op](Simulator &simulator) {
         auto left = simulator.get_i64(left_idx);
         auto right = simulator.get_i64(right_idx);
-        switch (op[0]) {
-            case '=':
-                simulator.set_i64(result, left==right);
-                break;
-            case '!':
-                simulator.set_i64(result, left!=right);
-                break;
-            case '>':
-                if (op.size() == 1) {
-                    simulator.set_i64(result, left>right);
-                } else {
-                    switch (op[1]) {
-                        case '=':
-                            simulator.set_i64(result, left>=right);
-                            break;
-                        case '>':
-                            simulator.set_i64(result, left>>right);
-                            break;                        
-                    }
-                }
-                break;                        
-            case '<':
-                if (op.size() == 1) {
-                    simulator.set_i64(result, left<right);
-                } else {
-                    switch (op[1]) {
-                        case '=':
-                            simulator.set_i64(result, left<=right);
-                            break;
-                        case '<':
-                            simulator.set_i64(result, left<<right);
-                            break;                        
-                    }
-                }
-                break;                        
-            case '+':
-                simulator.set_i64(result, left+right);
-                break;
-            case '-':
-                simulator.set_i64(result, left-right);
-                break;
-            case '*': 
-                simulator.set_i64(result, left*right);
-                break;
-            case '/': 
-                simulator.set_i64(result, left/right);
-                break;
-            case 'a':
-                simulator.set_i64(result, left&right);
-                break;
-            case 'x':
-                simulator.set_i64(result, left^right);
-                break;
-            case 'o':
-                simulator.set_i64(result, left|right);
-                break;
-        }
         
-    });
-
-    return 0;
+        const boost::unordered_map<std::string, std::function<void(void)>> op_map{
+            { "==", [&](){simulator.set_i64(result, left == right);}},
+            { "!=", [&](){simulator.set_i64(result, left != right);}},
+            { ">", [&](){simulator.set_i64(result, left > right);}},
+            { ">=", [&](){simulator.set_i64(result, left >= right);}},
+            { "<", [&](){simulator.set_i64(result, left < right);}},
+            { "<=", [&](){simulator.set_i64(result, left <= right);}},
+            { "+", [&](){simulator.set_i64(result, left + right);}},
+            { "-", [&](){simulator.set_i64(result, left - right);}},
+            { "*", [&](){simulator.set_i64(result, left * right);}},
+            { "/", [&](){simulator.set_i64(result, left / right);}},
+            { "<<", [&](){simulator.set_i64(result, left << right);}},
+            { ">>", [&](){simulator.set_i64(result, left >> right);}},
+            { "and", [&](){simulator.set_i64(result, left & right);}},
+            { "or", [&](){simulator.set_i64(result, left | right);}},
+            { "xor", [&](){simulator.set_i64(result, left ^ right);}},
+        };
+        
+        op_map.at(op)();
+    }};
 }
 
 antlrcpp::Any Assembler::visitConst_int(kqasmParser::Const_intContext *ctx) {
@@ -310,22 +249,19 @@ antlrcpp::Any Assembler::visitConst_int(kqasmParser::Const_intContext *ctx) {
     ss >> uval;
     std::int64_t val = ctx->SIG()? -uval : uval;
     auto idx = get_size_t(ctx->INT()->getText());
-   
-    instructions.push_back([idx, val](Simulator &simulator, size_t&, label_t&){
+    
+    return std::function<void(Simulator&)>{[idx, val](Simulator &simulator) {
         simulator.set_i64(idx, val);
-    });
-   
-    return 0;
+    }};
 }
 
 antlrcpp::Any Assembler::visitSet(kqasmParser::SetContext *ctx) {
     auto i64_in_idx = get_size_t(ctx->target->getText());
     auto i64_value_idx = get_size_t(ctx->from->getText());
-    instructions.push_back([i64_in_idx, i64_value_idx](Simulator &simulator, size_t&, label_t&) {
+    
+    return std::function<void(Simulator&)>{[i64_in_idx, i64_value_idx](Simulator &simulator) {
         simulator.set_i64(i64_in_idx, simulator.get_i64(i64_value_idx));
-    });
-
-    return 0;   
+    }};
 }
 
 antlrcpp::Any Assembler::visitBin_op(kqasmParser::Bin_opContext *ctx) {

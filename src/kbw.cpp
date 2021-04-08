@@ -52,16 +52,20 @@ kbw::kbw(const std::string& kqasm) {
     antlr4::CommonTokenStream tokens(&lexer);
     kqasmParser parser(&tokens); 
 
-    auto* tree = parser.entry();
+    auto* tree = parser.start();
 
-    Assembler assembler{instructions, labels};
-    assembler.visitEntry(tree);
+    Assembler assembler{blocks, next_block, end_block};
+    assembler.visitStart(tree);
 }
 
 void kbw::run() {
-   for (size_t pc = 0; pc < instructions.size(); pc++) {
-       instructions[pc](simulator, pc, labels);
-   }
+
+    std::string label{"@entry"};
+    while (true) {
+        blocks[label](simulator);
+        if (label == end_block) break;
+        label = next_block[label](simulator);
+    } 
 }
 
 std::string kbw::get_results() {

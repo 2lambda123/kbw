@@ -28,8 +28,8 @@
 #ifndef SWIG
 inline std::string plugin_path;
 
-using label_t = boost::unordered_map<std::string, size_t>;
-using inst_t = std::vector<std::function<void(Simulator&, size_t&, label_t&)>>;
+using block_t = boost::unordered_map<std::string, std::function<void(Simulator&)>>;
+using next_block_t = boost::unordered_map<std::string, std::function<std::string(Simulator&)>>;
 #endif
 
 void set_plugin_path(const std::string &path);
@@ -49,7 +49,8 @@ public:
     std::string get_dump(size_t idx);
 
 private:
-    inst_t instructions; 
-    label_t labels;
+    block_t blocks; 
+    next_block_t next_block;
+    std::string end_block;
     Simulator simulator;
 };
