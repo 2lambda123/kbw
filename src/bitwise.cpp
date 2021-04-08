@@ -353,8 +353,11 @@ dump_t Bitwise::dump(size_t size) const {
     dump_t state;
 
     for (auto &i : qbits) {
-        auto k = i.first[0] & ((1ul << size) -1);
-        state[k].push_back(i.second);
+        std::vector<uint64_t> tmp_state;
+        for (auto j = 0; j < size/64; j++)
+            tmp_state.push_back(i.first[j]);
+        tmp_state.push_back(i.first[size/64] & ((1ul << size%64) -1));
+        state[tmp_state].push_back(i.second);
     }
     for (auto &i : state) {
         std::sort(i.second.begin(), i.second.end(), [](std::complex<double> a, std::complex<double> b) {

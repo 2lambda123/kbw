@@ -67,7 +67,7 @@ namespace ket {
         //! Less than comparison for the hashmap indexation
         bool operator<(const Index& other) const;
       
-        const static size_t size = 3; //!< Size of the Index: size*64.
+        const static size_t size = 20; //!< Size of the Index: size*64.
  
     private:
         std::array<uint64_t, size> data;
@@ -84,7 +84,7 @@ namespace ket {
 
     using map = boost::unordered_map<Index, complex>; //!< Quantum state hashmap.
 
-    using dump_t = std::unordered_map<std::uint64_t, std::vector<complex>>; //! Quantum state dump.
+    using dump_t = std::map<std::vector<uint64_t>, std::vector<complex>>; //! Quantum state dump.
 
     /*! \brief Store and manipulate the quantum state hashmap.
      *  \class Bitwise

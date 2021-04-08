@@ -30,7 +30,7 @@
 #include "kqasmParser.h"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/complex.hpp>
-#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
 
 void set_plugin_path(const std::string &path) {
@@ -70,17 +70,6 @@ std::string kbw::get_results() {
 
 std::int64_t kbw::get_result(size_t idx) {
     return simulator.get_i64(idx);
-}
-
-std::vector<unsigned long long> kbw::get_dump_states(size_t idx) {
-    std::vector<unsigned long long> states;
-    for (auto &i : simulator.get_dump(idx)) 
-        states.push_back(i.first);
-    return states;
-}
-
-std::vector<std::complex<double>> kbw::get_dump_amplitude(size_t idx, std::uint64_t state) {
-    return simulator.get_dump(idx)[state];
 }
 
 std::string kbw::get_dump(size_t idx) {

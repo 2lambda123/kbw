@@ -46,9 +46,6 @@ public:
     std::string get_results();
     std::int64_t get_result(size_t idx);
 
-    std::vector<unsigned long long> get_dump_states(size_t idx);
-    std::vector<std::complex<double>> get_dump_amplitude(size_t idx, std::uint64_t state);
-    
     std::string get_dump(size_t idx);
 
 private:
