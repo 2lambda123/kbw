@@ -19,19 +19,18 @@ bitwise representation [[arxiv:2004.03560](https://arxiv.org/abs/2004.03560)].
 
 ```console
 $ kbw -h
-Ket Biswise Simulator server
+Ket Bitwise Simulator server
 ============================
 
-usage: kbw [-h] [-b 127.0.1.1] [-p 4242] [-s random] [-l]
+usage: kbw [-h] [-b ::1] [-p 4242] [-l]
 
-Ket Biswise Simulator server
+Ket Bitwise Simulator server
 
 optional arguments:
-  -h, --help     show this help message and exit
-  -b 127.0.1.1   Server bind
-  -p 4242        Server port
-  -s random      Seed for the PRNG
-  -l             Extra plugin path
+  -h, --help  show this help message and exit
+  -b ::1      Server bind
+  -p 4242     Server port
+  -l          Extra plugin path
 ```
 
 ## Installation

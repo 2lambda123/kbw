@@ -1,25 +1,17 @@
-/* MIT License
- * 
- * Copyright (c) 2020 Evandro Chagas Ribeiro da Rosa <evandro.crr@posgrad.ufsc.br>
- * Copyright (c) 2020 Rafael de Santiago <r.santiago@ufsc.br>
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+/* Copyright 2020, 2021 Evandro Chagas Ribeiro da Rosa <evandro.crr@posgrad.ufsc.br>
+ * Copyright 2020, 2021 Rafael de Santiago <r.santiago@ufsc.br>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "../include/assembler.hpp"
@@ -92,13 +84,13 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
     
     return std::function<void(Simulator&)>{[ctrl, qbit_idx, gate, args] (Simulator &simulator) {
         const boost::unordered_map<std::string, std::function<void(void)>> gate_map{
-            {"X", [&]() {simulator.x(qbit_idx, ctrl);}},
-            {"Y", [&]() {simulator.y(qbit_idx, ctrl);}},
-            {"Z", [&]() {simulator.z(qbit_idx, ctrl);}},
-            {"H", [&]() {simulator.h(qbit_idx, ctrl);}},
-            {"S", [&]() {simulator.s(qbit_idx, ctrl);}},
+            {"X",  [&]() {simulator.x(qbit_idx, ctrl);}},
+            {"Y",  [&]() {simulator.y(qbit_idx, ctrl);}},
+            {"Z",  [&]() {simulator.z(qbit_idx, ctrl);}},
+            {"H",  [&]() {simulator.h(qbit_idx, ctrl);}},
+            {"S",  [&]() {simulator.s(qbit_idx, ctrl);}},
             {"SD", [&]() {simulator.sd(qbit_idx, ctrl);}},
-            {"T", [&]() {simulator.t(qbit_idx, ctrl);}},
+            {"T",  [&]() {simulator.t(qbit_idx, ctrl);}},
             {"TD", [&]() {simulator.td(qbit_idx, ctrl);}},
             {"RX", [&]() {simulator.u3(args[0], -M_PI_2, M_PI_2, qbit_idx, ctrl);}},
             {"RY", [&]() {simulator.u3(args[0], 0, 0, qbit_idx, ctrl);}},
@@ -221,21 +213,21 @@ antlrcpp::Any Assembler::visitBinary_op(kqasmParser::Binary_opContext *ctx) {
         auto right = simulator.get_i64(right_idx);
         
         const boost::unordered_map<std::string, std::function<void(void)>> op_map{
-            { "==", [&](){simulator.set_i64(result, left == right);}},
-            { "!=", [&](){simulator.set_i64(result, left != right);}},
-            { ">", [&](){simulator.set_i64(result, left > right);}},
-            { ">=", [&](){simulator.set_i64(result, left >= right);}},
-            { "<", [&](){simulator.set_i64(result, left < right);}},
-            { "<=", [&](){simulator.set_i64(result, left <= right);}},
-            { "+", [&](){simulator.set_i64(result, left + right);}},
-            { "-", [&](){simulator.set_i64(result, left - right);}},
-            { "*", [&](){simulator.set_i64(result, left * right);}},
-            { "/", [&](){simulator.set_i64(result, left / right);}},
-            { "<<", [&](){simulator.set_i64(result, left << right);}},
-            { ">>", [&](){simulator.set_i64(result, left >> right);}},
-            { "and", [&](){simulator.set_i64(result, left & right);}},
-            { "or", [&](){simulator.set_i64(result, left | right);}},
-            { "xor", [&](){simulator.set_i64(result, left ^ right);}},
+            { "==",  [&](){simulator.set_i64(result, left == right);}},
+            { "!=",  [&](){simulator.set_i64(result, left != right);}},
+            { ">",   [&](){simulator.set_i64(result, left >  right);}},
+            { ">=",  [&](){simulator.set_i64(result, left >= right);}},
+            { "<",   [&](){simulator.set_i64(result, left <  right);}},
+            { "<=",  [&](){simulator.set_i64(result, left <= right);}},
+            { "+",   [&](){simulator.set_i64(result, left +  right);}},
+            { "-",   [&](){simulator.set_i64(result, left -  right);}},
+            { "*",   [&](){simulator.set_i64(result, left *  right);}},
+            { "/",   [&](){simulator.set_i64(result, left /  right);}},
+            { "<<",  [&](){simulator.set_i64(result, left << right);}},
+            { ">>",  [&](){simulator.set_i64(result, left >> right);}},
+            { "and", [&](){simulator.set_i64(result, left &  right);}},
+            { "or",  [&](){simulator.set_i64(result, left |  right);}},
+            { "xor", [&](){simulator.set_i64(result, left ^  right);}},
         };
         
         op_map.at(op)();
