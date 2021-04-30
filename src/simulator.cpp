@@ -50,21 +50,12 @@ KET_GATE(sd)
 KET_GATE(t)
 KET_GATE(td)
 
-void Simulator::u1(double lambda, size_t idx, const ctrl_list& ctrl) {
+void Simulator::p(double lambda, size_t idx, const ctrl_list& ctrl) {
     auto qubit_idx = allocated_qubits[idx];
     auto mapped_ctrl = map_ctrl(ctrl);
     if (merge(qubit_idx, mapped_ctrl)) {
         auto &bw = bitwise[qubit_idx];
-        bw->u1(lambda, qubit_idx, mapped_ctrl);
-    }
-}
-
-void Simulator::u2(double phi, double lambda, size_t idx, const ctrl_list& ctrl) {
-    auto qubit_idx = allocated_qubits[idx];
-    auto mapped_ctrl = map_ctrl(ctrl);
-    if(merge(qubit_idx, mapped_ctrl)) {
-        auto &bw = bitwise[qubit_idx];
-        bw->u2(phi, lambda, qubit_idx, mapped_ctrl);
+        bw->p(lambda, qubit_idx, mapped_ctrl);
     }
 }
 

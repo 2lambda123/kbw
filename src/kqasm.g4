@@ -43,7 +43,7 @@ ctrl : 'CTRL' qubits_list ',';
 
 qubits_list : '[' QBIT (',' QBIT)* ']';
 
-gate_name : 'X'|'Y'|'Z' |'H'|'S'|'SD'|'T'|'TD'|'U1'|'U2'|'U3'|'RZ'|'RX'|'RY';
+gate_name : 'X'|'Y'|'Z' |'H'|'S'|'SD'|'T'|'TD'|'P'|'RZ'|'RX'|'RY';
 
 arg_list : '(' DOUBLE (',' DOUBLE)* ')';
 

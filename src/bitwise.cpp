@@ -158,7 +158,7 @@ void Bitwise::cnot(size_t ctrl, size_t target,  const ctrl_list& ctrl2) {
     qbits.swap(qbits_tmp);
 }
 
-void Bitwise::u1(double lambda, size_t idx, const ctrl_list& ctrl) {
+void Bitwise::p(double lambda, size_t idx, const ctrl_list& ctrl) {
     for (auto &i : qbits) {
         bool exec = true;
         for (auto j : ctrl) exec &= i.first.is_one(j);
@@ -238,6 +238,14 @@ void Bitwise::u3(double theta, double phi, double lambda, size_t idx, const ctrl
     }
 
     qbits.swap(qbits_tmp);
+}
+
+void Bitwise::rx(double theta, size_t idx, const ctrl_list& ctrl) {
+    u3(theta, -M_PI_2, M_PI_2, idx, ctrl);
+}
+
+void Bitwise::ry(double theta, size_t idx, const ctrl_list& ctrl) {
+    u3(theta, 0, 0, idx, ctrl);
 }
 
 void Bitwise::rz(double lambda, size_t idx, const ctrl_list& ctrl) {
@@ -346,7 +354,7 @@ dump_t Bitwise::dump(size_t size) const {
 
     for (auto &i : qbits) {
         std::vector<uint64_t> tmp_state;
-        for (auto j = 0; j < size/64; j++)
+        for (auto j = 0ul; j < size/64; j++)
             tmp_state.push_back(i.first[j]);
         tmp_state.push_back(i.first[size/64] & ((1ul << size%64) -1));
         state[tmp_state].push_back(i.second);

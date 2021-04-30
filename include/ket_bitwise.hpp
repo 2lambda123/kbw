@@ -117,8 +117,8 @@ namespace ket {
         //! Apply a CNOT gate with optional quibits of control. 
         void cnot(size_t ctrl, size_t target, const ctrl_list& ctrl2 = {});
 
-        //! Apply a U1 gate with optional quibits of control. 
-        void u1(double lambda, size_t idx, const ctrl_list& ctrl={});
+        //! Apply a Phase gate with optional quibits of control. 
+        void p(double lambda, size_t idx, const ctrl_list& ctrl={});
         
         //! Apply a U2 gate with optional quibits of control. 
         void u2(double phi, double lambda, size_t idx, const ctrl_list& ctrl={});
@@ -126,8 +126,14 @@ namespace ket {
         //! Apply a U3 gate with optional quibits of control. 
         void u3(double theta, double phi, double lambda, size_t idx, const ctrl_list& ctrl={});
 
+        //! Apply a RX gate with optional quibits of control. 
+        void rx(double theta, size_t idx, const ctrl_list& ctrl={});
+
+        //! Apply a RY gate with optional quibits of control. 
+        void ry(double theta, size_t idx, const ctrl_list& ctrl={});
+        
         //! Apply a RZ gate with optional quibits of control. 
-        void rz(double lambda, size_t idx, const ctrl_list& ctrl={});
+        void rz(double theta, size_t idx, const ctrl_list& ctrl={});
 
         //! Measure a qubit.
         int measure(size_t idx);

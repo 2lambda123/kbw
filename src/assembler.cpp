@@ -95,9 +95,7 @@ antlrcpp::Any Assembler::visitGate(kqasmParser::GateContext *ctx) {
             {"RX", [&]() {simulator.u3(args[0], -M_PI_2, M_PI_2, qbit_idx, ctrl);}},
             {"RY", [&]() {simulator.u3(args[0], 0, 0, qbit_idx, ctrl);}},
             {"RZ", [&]() {simulator.rz(args[0], qbit_idx, ctrl);}},
-            {"U1", [&]() {simulator.u1(args[0], qbit_idx, ctrl);}},
-            {"U2", [&]() {simulator.u2(args[0], args[1], qbit_idx, ctrl);}},
-            {"U3", [&]() {simulator.u3(args[0], args[1], args[2], qbit_idx, ctrl);}},
+            {"P",  [&]() {simulator.p(args[0], qbit_idx, ctrl);}},
         };
         
         gate_map.at(gate)();
@@ -155,7 +153,7 @@ antlrcpp::Any Assembler::visitBranch(kqasmParser::BranchContext *ctx) {
 antlrcpp::Any Assembler::visitJump(kqasmParser::JumpContext *ctx) {
     auto label = ctx->LABEL()->getText();
 
-    return std::function<std::string(Simulator&)>{[label](Simulator &simulator) {
+    return std::function<std::string(Simulator&)>{[label](Simulator&) {
         return label;
     }};
 }

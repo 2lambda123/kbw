@@ -30,9 +30,7 @@ public:
     void sd(size_t idx, const ket::ctrl_list& ctrl = {});
     void t(size_t idx, const ket::ctrl_list& ctrl = {});
     void td(size_t idx, const ket::ctrl_list& ctrl = {});
- // void cnot(size_t ctrl, size_t target, const ket::ctrl_list& ctrl2 = {});
-    void u1(double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
-    void u2(double phi, double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
+    void p(double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
     void u3(double theta, double phi, double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
     void rz(double lambda, size_t idx, const ket::ctrl_list& ctrl = {});
     void measure(size_t idx);
