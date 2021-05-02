@@ -41,6 +41,10 @@ grade: devel
 base: core20
 confinement: strict
 
+architectures:
+  - build-on: amd64
+    run-on: amd64
+
 parts: 
   snapcraft-preload:
     source: https://github.com/sergiusens/snapcraft-preload.git
@@ -76,8 +80,10 @@ parts:
       - unzip
       - uuid-dev
     stage-packages:
-      - python3.8-minimal
       - libpython3.8-dev
+      - libpython3.8-minimal
+      - libpython3.8-stdlib
+      - python3.8-minimal
     filesets:
       kbw-files:
         - lib/python3.8/site-packages/kbw*
@@ -101,4 +107,4 @@ apps:
     environment:
       LC_ALL: C.UTF-8
       LANG: C.UTF-8
-      PYTHONPATH: $SNAP/lib/python3.8/site-packages
+      PYTHONPATH: $SNAP/lib/python3.8:$SNAP/usr/lib/python3.8/lib-dynload:$SNAP/lib/python3.8/site-packages:$SNAP_USER_COMMON/lib/python3.8/site-packages
