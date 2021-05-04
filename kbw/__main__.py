@@ -130,8 +130,11 @@ def main():
         server = socket.create_server(addr, family=socket.AF_INET6, dualstack_ipv6=True)
     except:
         server = socket.create_server(addr)
+    
+    addr = server.getsockname()
+    addr_str = addr[0]+':'+str(addr[1])
 
-    print('\tAddress\t\t', server.getsockname(), sep='')
+    print('\tAddress\t\t', addr_str, sep='')
 
     print("\nUse Ctrl+c to stop the server\n")
 
