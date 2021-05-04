@@ -110,8 +110,8 @@ def main():
     print('============================\n')
     
     parser_args = argparse.ArgumentParser(prog='kbw', description=description)
-    parser_args.add_argument('-b', metavar='::1 ', type=str, default='::1', help='Server bind')
-    parser_args.add_argument('-p', metavar='4242', type=int, default=4242, help='Server port')
+    parser_args.add_argument('-b', metavar='', type=str, default='', help='Server bind')
+    parser_args.add_argument('-p', metavar='', type=int, default=4242, help='Server port')
     parser_args.add_argument('-l', metavar='', type=str, help='Extra plugin path')
     args = parser_args.parse_args() 
 
@@ -125,9 +125,13 @@ def main():
         plugin_path += ':' + args.l
     print('\tPlugin PATH', plugin_path, sep='\t')
 
-    server = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-    server.bind((args.b, args.p))
-    print('\tBind\t\t', args.b, ':', args.p, sep='')
+    addr = (args.b, args.p)
+    try:
+        server = socket.create_server(addr, family=socket.AF_INET6, dualstack_ipv6=True)
+    except:
+        server = socket.create_server(addr)
+
+    print('\tAddress\t\t', server.getsockname(), sep='')
 
     print("\nUse Ctrl+c to stop the server\n")
 
