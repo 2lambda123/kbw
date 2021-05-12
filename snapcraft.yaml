@@ -59,14 +59,19 @@ parts:
       - on amd64:
         - lib32stdc++6
 
+  flask:
+    plugin: python
+    python-packages: 
+      - flask>=2
+    stage-packages:
+      - libpython3.8-dev
+      - libpython3.8-minimal
+      - libpython3.8-stdlib
+      - python3.8-minimal
+  
   kbw:
     plugin: python
     source: .
-    python-packages: 
-      - conan
-      - distro==1.1.0
-      - ninja
-      - scikit-build
     build-packages: 
       - cmake
       - curl
@@ -79,23 +84,14 @@ parts:
       - swig
       - unzip
       - uuid-dev
-    stage-packages:
-      - libpython3.8-dev
-      - libpython3.8-minimal
-      - libpython3.8-stdlib
-      - python3.8-minimal
     filesets:
       kbw-files:
         - lib/python3.8/site-packages/kbw*
-      python-files:
-        - usr/lib/python3.8/
-        - usr/bin/python3.8
-        - usr/lib/x86_64-linux-gnu/libpython3.8.so*
-    prime:
+    stage:
       - $kbw-files
-      - $python-files
     after: 
       - snapcraft-preload
+      - flask
  
 apps:
   kbw:
