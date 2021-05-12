@@ -21,7 +21,6 @@ setup_requirements = [
     'scikit-build>=0.11.1',
     'cmake>=3.16',
     'conan>=1.25',
-    'flask>=1.1.2'
 ]
 
 setup (name = 'kbw',
@@ -36,6 +35,7 @@ setup (name = 'kbw',
        license='Apache-2.0',
        packages=setuptools.find_namespace_packages(include=['kbw', 'kbw.*']),
        setup_requires=setup_requirements,
+       install_requires=['flask>=2'],
        classifiers=['Programming Language :: Python :: 3',
                     'Programming Language :: C++',
                     'Intended Audience :: Science/Research',
