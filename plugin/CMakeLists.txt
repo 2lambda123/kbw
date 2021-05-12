@@ -16,6 +16,12 @@ target_link_libraries(ket_diag ket_bitwise)
 install(TARGETS ket_diag
         LIBRARY DESTINATION kbw)
 
+add_library(ket_mat SHARED ket_mat.cpp)
+target_link_libraries(ket_mat ket_bitwise)
+
+install(TARGETS ket_mat
+        LIBRARY DESTINATION kbw)
+
 add_library(ket_pycall SHARED ket_pycall.cpp)
 
 target_link_libraries(ket_pycall ket_bitwise CONAN_PKG::boost)
