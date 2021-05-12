@@ -39,11 +39,13 @@ public:
     void apply_plugin(const boost::shared_ptr<ket::bitwise_api>& plugin, std::vector<size_t> idx, const std::string& args, bool adj, const ket::ctrl_list& ctrl);
     size_t get_bit(size_t idx);
     std::int64_t get_i64(size_t idx);
+    std::int64_t i64_len() const;
     void set_i64(size_t idx, std::int64_t value);
     void print(size_t idx);
     std::string get_results();
     void dump(const std::vector<size_t>& idx);
     ket::dump_t get_dump(size_t idx) const;
+    std::int64_t dumps_len() const;
 
 private:
     inline ket::ctrl_list map_ctrl(const ket::ctrl_list& ctrl) const {

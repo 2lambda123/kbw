@@ -37,8 +37,10 @@ public:
 
     std::string get_results();
     std::int64_t get_result(size_t idx);
+    std::int64_t results_len();
 
     std::string get_dump(size_t idx);
+    std::int64_t dumps_len();
 
 private:
     block_t blocks; 

@@ -76,3 +76,11 @@ std::string kbw::get_dump(size_t idx) {
     
     return stream.str();
 }
+
+std::int64_t kbw::dumps_len() {
+    return simulator.dumps_len();
+}
+
+std::int64_t kbw::results_len(){
+    return simulator.i64_len();
+}

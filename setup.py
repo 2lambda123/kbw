@@ -17,13 +17,15 @@ except ImportError:
 with open('README.md', 'r') as file:
     long_description = file.read()
 
-setup_requirements = ['scikit-build>=0.11.1',
-                      'cmake>=3.16',
-                      'conan>=1.25'
-                      ]
+setup_requirements = [
+    'scikit-build>=0.11.1',
+    'cmake>=3.16',
+    'conan>=1.25',
+    'flask>=1.1.2'
+]
 
 setup (name = 'kbw',
-       version='0.1b3',
+       version='0.1b4',
        cmake_source_dir='.',
        author='Evandro Chagas Ribeiro da Rosa',
        author_email='evandro.crr@posgrad.ufsc.br',

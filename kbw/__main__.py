@@ -13,29 +13,29 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from multiprocessing.context import Process
 from .kbw import kbw, set_plugin_path, set_seed 
-from enum import Enum
-from math import ceil
+from flask import request, jsonify, Flask
+from base64 import b64encode
 from os.path import dirname
-from random import randint
-from struct import pack, unpack
-from os import environ
-from multiprocessing import Process
 import argparse
-import socket
-from sys import argv, exit
+from random import randint
+from os import environ
 
-ACK = pack('<b', 0)
+server = Flask(__name__)
 
-class Command(Enum):
-    EXIT = 0
-    GET = 1
-    DUMP = 2
+@server.route('/', methods=['GET'])
+def home():
+    return '''<h1>Ket Bitwise Simulator</h1>
+<p><a href=http://quantum-ket.gitlab.io>quantum-ket.gitlab.io</a></p>'''
 
-def client(client, address):
-    print('\tConnected by', address, sep='\t')
+@server.route('/api/v1/run', methods=['GET'])
+def run_kqasm():
+    
+    if 'kqasm' not in request.args:
+        return 'Error!!! No KQASM provided.'
 
+    kqasm = request.args['kqasm']
+    
     ##### Set plugin path ####
     set_plugin_path(plugin_path)
     environ['KET_PYCALL'] = plugin_path+'/ket_pycall_interpreter'
@@ -44,65 +44,24 @@ def client(client, address):
     #### Set seed ####
     seed = randint(0, 2**31)
     set_seed(seed)
-    print('\tSeed', seed, address, sep='\t')
     ##################
-
-    print('\tWaiting KQASM...', address, sep='\t')
     
-    #### Get KQASM size ####
-    file_size, =  unpack('<I', client.recv(4))
-    client.sendall(ACK)
-    print('\tKQASM size\t', str(file_size)+"B" ,address, sep='\t')
-    ########################
-
-    #### Get KQASM ####
-    kqasm_buffer = bytearray()
-    for _ in range(ceil(file_size/buffer_size)):
-        data = client.recv(buffer_size)
-        kqasm_buffer += data
-    kqasm_file = kqasm_buffer.decode()
-    ###################
-
-    #### Run ####
-    print('\tRunning KQASM...', address, sep='\t')
-    quantum_execution = kbw(kqasm_file)
+    quantum_execution = kbw(kqasm)
     quantum_execution.run()
 
-    client.sendall(ACK)
-    ############
-    
-    while True:
-        print('\tWaiting command...', address, sep='\t')
+    result = {}
 
-        #### Get command ####
-        command = Command(*unpack('<b', client.recv(1)))
-        client.sendall(ACK)
-        print('\t\tProcessing', command, address, sep='\t')
-        #####################
+    result['int'] = {}
+    for i in range(quantum_execution.results_len()):
+        result['int'][i] = quantum_execution.get_result(i)
 
-        if command == Command.GET: # Get measurement
-            idx, = unpack('<Q', client.recv(8))
-            result = quantum_execution.get_result(idx)
+    result['dump'] = {}
+    for i in range(quantum_execution.dumps_len()):
+        result['dump'][i] = b64encode(quantum_execution.get_dump(i)).decode()
 
-            print('\t\tSending result', idx, result, address, sep='\t')
-            client.sendall(pack('<q', result))
+    result['kqasm'] = kqasm
 
-        elif command == Command.DUMP: # Get dump
-            #### Get dump index ####
-            idx, = unpack('<Q', client.recv(8))
-            dump = quantum_execution.get_dump(idx)
-            print('\t\tSending dump', idx, str(len(dump)/2**20)+"MB", address, sep='\t')
-            client.sendall(pack('<Q', len(dump)))
-            ##################
-
-            client.sendall(dump)
-            
-        elif command == Command.EXIT:
-            break
-
-    client.close()
-    print("Connection", address, "closed\n")
-    exit(0)
+    return jsonify(result)
 
 def main():
     description = 'Ket Bitwise Simulator server'
@@ -115,42 +74,13 @@ def main():
     parser_args.add_argument('-l', metavar='', type=str, help='Extra plugin path')
     args = parser_args.parse_args() 
 
-    print('Setting up:') 
-    global buffer_size
-    buffer_size = 1024
-
     global plugin_path 
     plugin_path = dirname(__file__)
     if args.l:
         plugin_path += ':' + args.l
-    print('\tPlugin PATH', plugin_path, sep='\t')
+    print('Plugin PATH', plugin_path, '\n', sep='\t')
 
-    addr = (args.b, args.p)
-    try:
-        server = socket.create_server(addr, family=socket.AF_INET6, dualstack_ipv6=True)
-    except:
-        server = socket.create_server(addr)
+    server.run(host=args.b, port=args.p)
     
-    addr = server.getsockname()
-    addr_str = addr[0]+':'+str(addr[1])
-
-    print('\tAddress\t\t', addr_str, sep='')
-
-    print("\nUse Ctrl+c to stop the server\n")
-
-    server.listen()
-
-    while True:
-        try:
-            print('Waiting connection...')
-            Process(target=client, args=server.accept()).start()
-        except KeyboardInterrupt:
-            break
-
-    server.close()
-    print("Server stopped")
-        
-if __name__ == "__main__":
-    if '' in argv:
-        argv.remove('')
-    main() 
+if __name__ == '__main__':
+    main()

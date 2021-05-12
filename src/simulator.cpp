@@ -170,3 +170,11 @@ void Simulator::dump(const std::vector<size_t>& idx) {
 dump_t Simulator::get_dump(size_t idx) const {
     return dumps.at(idx);
 }
+
+std::int64_t Simulator::dumps_len() const {
+    return dumps.size();
+}
+
+std::int64_t Simulator::i64_len() const {
+    return i64s.size();
+}
