@@ -24,6 +24,9 @@
 #include <boost/serialization/complex.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
+#include <cstdio>
+#include <filesystem>
+#include <fstream>
 
 void set_plugin_path(const std::string &path) {
     plugin_path = path;
@@ -75,6 +78,19 @@ std::string kbw::get_dump(size_t idx) {
     oarchive << simulator.get_dump(idx);
     
     return stream.str();
+}
+
+std::string kbw::dump_to_fs(size_t idx) {
+    std::string tmp_name = std::tmpnam(nullptr)+std::string{".ketd"};
+
+    std::ofstream tmp_file{tmp_name, std::ofstream::binary};
+    boost::archive::binary_oarchive oarchive{tmp_file};
+
+    oarchive << simulator.get_dump(idx);
+
+    tmp_file.close();
+
+    return tmp_name;
 }
 
 std::int64_t kbw::dumps_len() {

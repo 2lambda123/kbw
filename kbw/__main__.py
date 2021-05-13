@@ -35,16 +35,12 @@ def run_kqasm():
         return 'Error!!! No KQASM provided.'
 
     kqasm = request.args['kqasm']
-    
-    ##### Set plugin path ####
+
     set_plugin_path(plugin_path)
     environ['KET_PYCALL'] = plugin_path+'/ket_pycall_interpreter'
-    ##########################
 
-    #### Set seed ####
-    seed = randint(0, 2**31)
+    seed = int(request.args['seed']) if 'seed' in request.args else randint(0, 2**31)
     set_seed(seed)
-    ##################
     
     quantum_execution = kbw(kqasm)
     quantum_execution.run()
@@ -56,10 +52,17 @@ def run_kqasm():
         result['int'][i] = quantum_execution.get_result(i)
 
     result['dump'] = {}
-    for i in range(quantum_execution.dumps_len()):
-        result['dump'][i] = b64encode(quantum_execution.get_dump(i)).decode()
-
-    result['kqasm'] = kqasm
+    
+    if 'dump2fs' in request.args and request.args['dump2fs'] == '1':
+        result['dump2fs'] = 1
+        for i in range(quantum_execution.dumps_len()):
+            result['dump'][i] = quantum_execution.dump_to_fs(i)
+    else:
+        result['dump2fs'] = 0
+        for i in range(quantum_execution.dumps_len()):
+            result['dump'][i] = b64encode(quantum_execution.get_dump(i)).decode()
+    
+    result['seed'] = seed
 
     return jsonify(result)
 
