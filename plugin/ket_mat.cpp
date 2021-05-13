@@ -65,6 +65,8 @@ public:
                     if (std::abs(tmp_qbits[j]) < 1e-10)
                             tmp_qbits.erase(j);
                 }
+            } else {
+                tmp_qbits[i.first] = i.second;
             }
         }
         qbits.swap(tmp_qbits);
