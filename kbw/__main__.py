@@ -80,7 +80,7 @@ def main():
     global plugin_path 
     plugin_path = dirname(__file__)
     if args.l:
-        plugin_path += ':' + args.l
+        plugin_path = args.l + ':' + plugin_path
     print('Plugin PATH', plugin_path, '\n', sep='\t')
 
     server.run(host=args.b, port=args.p)
