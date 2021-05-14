@@ -13,58 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .kbw import kbw, set_plugin_path, set_seed 
-from flask import request, jsonify, Flask
-from base64 import b64encode
+from .server import server
+from gevent.pywsgi import WSGIServer
 from os.path import dirname
-import argparse
-from random import randint
 from os import environ
-
-server = Flask(__name__)
-
-@server.route('/', methods=['GET'])
-def home():
-    return '''<h1>Ket Bitwise Simulator</h1>
-<p><a href=http://quantum-ket.gitlab.io>quantum-ket.gitlab.io</a></p>'''
-
-@server.route('/api/v1/run', methods=['GET'])
-def run_kqasm():
-    
-    if 'kqasm' not in request.args:
-        return 'Error!!! No KQASM provided.'
-
-    kqasm = request.args['kqasm']
-
-    set_plugin_path(plugin_path)
-    environ['KET_PYCALL'] = plugin_path+'/ket_pycall_interpreter'
-
-    seed = int(request.args['seed']) if 'seed' in request.args else randint(0, 2**31)
-    set_seed(seed)
-    
-    quantum_execution = kbw(kqasm)
-    quantum_execution.run()
-
-    result = {}
-
-    result['int'] = {}
-    for i in range(quantum_execution.results_len()):
-        result['int'][i] = quantum_execution.get_result(i)
-
-    result['dump'] = {}
-    
-    if 'dump2fs' in request.args and request.args['dump2fs'] == '1':
-        result['dump2fs'] = 1
-        for i in range(quantum_execution.dumps_len()):
-            result['dump'][i] = quantum_execution.dump_to_fs(i)
-    else:
-        result['dump2fs'] = 0
-        for i in range(quantum_execution.dumps_len()):
-            result['dump'][i] = b64encode(quantum_execution.get_dump(i)).decode()
-    
-    result['seed'] = seed
-
-    return jsonify(result)
+import argparse
 
 def main():
     description = 'Ket Bitwise Simulator server'
@@ -77,13 +30,18 @@ def main():
     parser_args.add_argument('-l', metavar='', type=str, help='Extra plugin path')
     args = parser_args.parse_args() 
 
-    global plugin_path 
     plugin_path = dirname(__file__)
     if args.l:
         plugin_path = args.l + ':' + plugin_path
-    print('Plugin PATH', plugin_path, '\n', sep='\t')
-
-    server.run(host=args.b, port=args.p)
+    environ['KBW_LIBPATH'] = plugin_path
+    print('Plugin PATH', plugin_path, sep='\t')
+    http_server = WSGIServer((args.b, args.p), server)
+    print('Running on\t', 'http://', '127.0.0.1' if args.b == '' else args.b, ':', args.p, '\n', sep='')
+    print('Press CTRL+C to quit')
+    try:
+        http_server.serve_forever()
+    except KeyboardInterrupt:
+        return
     
 if __name__ == '__main__':
     main()
