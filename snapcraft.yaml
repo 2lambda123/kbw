@@ -63,6 +63,7 @@ parts:
     plugin: python
     python-packages: 
       - flask>=2
+      - gevent>=21.1.2
     stage-packages:
       - libpython3.8-dev
       - libpython3.8-minimal
