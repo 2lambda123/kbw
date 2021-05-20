@@ -30,10 +30,10 @@ def home():
 @server.route('/api/v1/run', methods=['GET'])
 def run_kqasm():
     
-    if 'kqasm' not in request.args:
+    if 'kqasm' not in request.form:
         return 'Error!!! No KQASM provided.'
 
-    kqasm = request.args['kqasm']
+    kqasm = request.form['kqasm']
 
     plugin_path = environ['KBW_LIBPATH']
     set_plugin_path(plugin_path)
