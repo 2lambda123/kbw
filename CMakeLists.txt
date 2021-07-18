@@ -59,8 +59,7 @@ include(UseSWIG)
 SET_PROPERTY(SOURCE src/wrapper.i
              PROPERTY CPLUSPLUS ON)
 
-find_package(PythonLibs REQUIRED)
-include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${PYTHON_INCLUDE_DIR})
 #################################################
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -85,7 +84,7 @@ add_dependencies(kbw parser)
 
 target_compile_options(kbw PUBLIC -Wall -Wextra -pedantic)
 
-target_link_libraries(kbw CONAN_PKG::boost antlr4_static dl ${PYTHON_LIBRARIES} Threads::Threads)
+target_link_libraries(kbw CONAN_PKG::boost antlr4_static dl Threads::Threads)
 
 add_library(ket_bitwise STATIC 
             EXCLUDE_FROM_ALL
