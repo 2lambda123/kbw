@@ -22,19 +22,23 @@ target_link_libraries(ket_mat ket_bitwise)
 install(TARGETS ket_mat
         LIBRARY DESTINATION kbw)
 
-add_library(ket_pycall SHARED ket_pycall.cpp)
 
-target_link_libraries(ket_pycall ket_bitwise CONAN_PKG::boost)
+if (NOT DEFINED NOPYCALL)
+        add_library(ket_pycall SHARED ket_pycall.cpp)
 
-install(TARGETS ket_pycall
-        LIBRARY DESTINATION kbw)
+        target_link_libraries(ket_pycall ket_bitwise CONAN_PKG::boost)
 
-add_executable(ket_pycall_interpreter ket_pycall_interpreter.cpp)
+        install(TARGETS ket_pycall
+                LIBRARY DESTINATION kbw)
 
-target_link_libraries(ket_pycall_interpreter ${PYTHON_LIBRARIES})
+        add_executable(ket_pycall_interpreter ket_pycall_interpreter.cpp)
 
-install(TARGETS ket_pycall_interpreter
-        RUNTIME DESTINATION kbw)
+        find_package (Python3 COMPONENTS Development.Embed)
+        target_link_libraries(ket_pycall_interpreter ${Python3_LIBRARIES})
+
+        install(TARGETS ket_pycall_interpreter
+                RUNTIME DESTINATION kbw)
+endif()
 
 #### Begin example #######################
 add_library(example SHARED example.cpp)
