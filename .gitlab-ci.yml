@@ -5,11 +5,11 @@ python_manylinux_wheel:
     - yum -y install libuuid-devel java-11-openjdk
     - export PATH=$PATH:/opt/python/cp39-cp39/bin/
     - pip install conan auditwheel
-    - python3.7  setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-9/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-9/root/bin/c++ -DNOPYCALL=1
-    - python3.8  setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-9/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-9/root/bin/c++ -DNOPYCALL=1
-    - python3.9  setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-9/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-9/root/bin/c++ -DNOPYCALL=1
-    - python3.10 setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-9/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-9/root/bin/c++ -DNOPYCALL=1
-    - pypy3.7    setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-9/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-9/root/bin/c++ -DNOPYCALL=1
+    - python3.7  setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-10/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-10/root/bin/c++ -DNOPYCALL=1
+    - python3.8  setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-10/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-10/root/bin/c++ -DNOPYCALL=1
+    - python3.9  setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-10/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-10/root/bin/c++ -DNOPYCALL=1
+    - python3.10 setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-10/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-10/root/bin/c++ -DNOPYCALL=1
+    - pypy3.7    setup.py bdist_wheel -DCMAKE_C_COMPILER=/opt/rh/devtoolset-10/root/bin/cc -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-10/root/bin/c++ -DNOPYCALL=1
     - ./wheelrepair.sh
   artifacts:
     paths:
