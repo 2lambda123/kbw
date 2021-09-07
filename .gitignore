@@ -16,3 +16,4 @@ kbw.egg-info
 AppDir
 appimage-builder-cache
 *.AppImage
+venv

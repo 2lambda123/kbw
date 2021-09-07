@@ -14,6 +14,7 @@
 #  limitations under the License.
 
 from .server import server
+from .kbw import build_info
 from gevent.pywsgi import WSGIServer
 from os.path import dirname
 from os import environ
@@ -21,14 +22,16 @@ import argparse
 
 def main():
     description = 'Ket Bitwise Simulator server'
-    print(description)
-    print('============================\n')
-    
     parser_args = argparse.ArgumentParser(prog='kbw', description=description)
+    parser_args.add_argument('--version', action='version', version=f'KBW {build_info()}')
     parser_args.add_argument('-b', metavar='', type=str, default='', help='Server bind')
     parser_args.add_argument('-p', metavar='', type=int, default=4242, help='Server port')
     parser_args.add_argument('-l', metavar='', type=str, help='Extra plugin path')
     args = parser_args.parse_args() 
+
+    print(description)
+    print('KBW', build_info())
+    print('============================\n')
 
     plugin_path = dirname(__file__)
     if args.l:

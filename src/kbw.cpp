@@ -28,6 +28,10 @@
 #include <filesystem>
 #include <fstream>
 
+std::string build_info() {
+    return KBW_BUILD_INFO;
+}
+
 void set_plugin_path(const std::string &path) {
     plugin_path = path;
 }

@@ -29,6 +29,8 @@ std::string get_plugin_path();
 
 void set_seed(int seed);
 
+std::string build_info();
+
 class kbw {
 public:
     kbw (const std::string& kqasm);

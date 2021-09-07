@@ -1,4 +1,3 @@
-[![kbw](https://snapcraft.io//kbw/badge.svg)](https://snapcraft.io/kbw)
 [![PyPI](https://img.shields.io/pypi/v/kbw.svg)](https://pypi.org/project/kbw/)
 [![AppImage](https://gitlab.com/quantum-ket/kbw/badges/master/pipeline.svg)](https://gitlab.com/quantum-ket/kbw/-/jobs)
 
@@ -19,42 +18,32 @@ bitwise representation [[arxiv:2004.03560](https://arxiv.org/abs/2004.03560)].
 
 ```console
 $ kbw -h
-Ket Bitwise Simulator server
-============================
-
-usage: kbw [-h] [-b ::1] [-p 4242] [-l]
+usage: kbw [-h] [--version] [-b] [-p] [-l]
 
 Ket Bitwise Simulator server
 
 optional arguments:
   -h, --help  show this help message and exit
-  -b ::1      Server bind
-  -p 4242     Server port
+  --version   show program's version number and exit
+  -b          Server bind
+  -p          Server port
   -l          Extra plugin path
 ```
-
 ## Installation
 
 Available installation methods:
 
-* [Snap](#install-using-snap) (recommended)
 * [pip](#install-using-pip)
 * [Source](#install-from-source)
-* AppImage [:arrow_down:](https://gitlab.com/quantum-ket/kbw/-/jobs/artifacts/master/download?job=appimage)
-
-### Install using Snap
-
-The kbw is available in most Linux distribution through the Snap Store.
-
-> Information on how to enable Snap on your Linux distribution is available on
-> https://snapcraft.io/kbw.
-
-To install using snap runs:
-```console
-$ sudo snap install kbw --edge
-```
 
 ### Install using pip
+
+To install using pip runs:
+```console
+$ pip install kbw
+```
+
+### Install from source 
 
 Install requirements:
 
@@ -65,19 +54,6 @@ Install requirements:
 * SWIG
 * cURL
 * unzip
-
-To install using pip runs:
-```console
-$ pip install kbw
-```
-
-> **Usage:** `python -m kbw`
-
-### Install from source 
-
-> Recommended if you want to be up to date without using Snap.
-
-This method has the same install requirements as installing using pip.
 
 To install from source runs:
 ```console
@@ -90,7 +66,7 @@ $ python setup.py install
 
 To get start developing you own plugin for KBW we recommend modify the example
 plugin: [example.cpp](plugin/example.cpp).  See
-https://quantum-ket.gitlab.io/kbw.html for the Ket Bitwise API documentation.
+https://quantum-ket.gitlab.io/kbw/namespaceket.html for the Ket Bitwise API documentation.
 
 To use your plugin you can re[install KBW from source](#install-from-source)
 or add the compiled plugin to the extra plugin path.
@@ -112,7 +88,7 @@ $ ninja example
 $ kbw -l kbw/build/lib
 ```
 
-> Do not execute KBW (Snap or Python) inside the project directory or subdirectories.  
+> Do not execute KBW inside the project directory or subdirectories.  
 
 -----------
 

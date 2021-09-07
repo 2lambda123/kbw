@@ -76,6 +76,8 @@ swig_add_library(kbw
                  ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmParser.cpp
                  ${CMAKE_CURRENT_BINARY_DIR}/src/kqasmVisitor.cpp)
 
+target_compile_definitions(kbw PRIVATE KBW_BUILD_INFO=${KBW_BUILD_INFO})
+
 set_target_properties(kbw PROPERTIES 
                       CXX_STANDARD 17
                       POSITION_INDEPENDENT_CODE ON)
