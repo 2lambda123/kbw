@@ -33,6 +33,6 @@ def start_server(quiet=True, **kwargs) -> Process:
     """Start the KBW server in a new Process"""
     quiet = ['--quiet'] if quiet else []
     args = [f'--{arg}={kwargs[arg]}' for arg in kwargs] 
-    p = Process(target=main, args=(quiet+args,))
+    p = Process(name='KBW Server', target=main, args=(quiet+args,))
     p.start()
     return p
