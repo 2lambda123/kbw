@@ -30,7 +30,7 @@ setup_requirements = [
     'conan>=1.25',
 ]
 
-__version__ = '0.1'
+__version__ = '0.1.1'
 
 setup (
     name = 'kbw',
@@ -48,6 +48,7 @@ setup (
     url='https://gitlab.com/quantum-ket/kbw',
     license='Apache-2.0',
     packages=setuptools.find_namespace_packages(include=['kbw', 'kbw.*']),
+    python_requires='>=3.7',
     setup_requires=setup_requirements,
     install_requires=['flask>=2', 'gevent>=21.1.2'],
     classifiers=[

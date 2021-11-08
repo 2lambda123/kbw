@@ -13,38 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .server import server
-from .kbw import build_info
-from gevent.pywsgi import WSGIServer
-from os.path import dirname
-from os import environ
-import argparse
+from .script import main
 
-def main():
-    description = 'Ket Bitwise Simulator server'
-    parser_args = argparse.ArgumentParser(prog='kbw', description=description)
-    parser_args.add_argument('--version', action='version', version=f'KBW {build_info()}')
-    parser_args.add_argument('-b', metavar='', type=str, default='', help='Server bind')
-    parser_args.add_argument('-p', metavar='', type=int, default=4242, help='Server port')
-    parser_args.add_argument('-l', metavar='', type=str, help='Extra plugin path')
-    args = parser_args.parse_args() 
-
-    print(description)
-    print('KBW', build_info())
-    print('============================\n')
-
-    plugin_path = dirname(__file__)
-    if args.l:
-        plugin_path = args.l + ':' + plugin_path
-    environ['KBW_LIBPATH'] = plugin_path
-    print('Plugin PATH', plugin_path, sep='\t')
-    http_server = WSGIServer((args.b, args.p), server)
-    print('Running on\t', 'http://', '127.0.0.1' if args.b == '' else args.b, ':', args.p, '\n', sep='')
-    print('Press CTRL+C to quit')
-    try:
-        http_server.serve_forever()
-    except KeyboardInterrupt:
-        return
-    
 if __name__ == '__main__':
     main()

@@ -13,7 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .kbw import kbw, set_plugin_path, set_seed 
+from .kbw import kbw, set_plugin_path, set_seed
+from .script import main
+from multiprocessing import Process
 from os import environ
 from os.path import dirname
 from random import randint
@@ -26,3 +28,11 @@ environ['KET_PYCALL'] = plugin_path+'/ket_pycall_interpreter'
 
 seed = randint(0, 2**31)
 set_seed(seed)
+
+def start_server(quiet=True, **kwargs) -> Process:
+    """Start the KBW server in a new Process"""
+    quiet = ['--quiet'] if quiet else []
+    args = [f'--{arg}={kwargs[arg]}' for arg in kwargs] 
+    p = Process(target=main, args=(quiet+args,))
+    p.start()
+    return p
