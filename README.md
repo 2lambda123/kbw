@@ -1,3 +1,9 @@
+# DEPRECATED - KBW is now available in the Libket repository.
+
+Ket >= 0.3 packages KBW as default quantum execution target, no extra installation required.
+
+-------------------
+
 [![PyPI](https://img.shields.io/pypi/v/kbw.svg)](https://pypi.org/project/kbw/)
 [![AppImage](https://gitlab.com/quantum-ket/kbw/badges/master/pipeline.svg)](https://gitlab.com/quantum-ket/kbw/-/jobs)
 
