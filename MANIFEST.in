@@ -1,9 +1,0 @@
-include LICENSE
-include README.md
-include include/*.hpp
-include src/*.cpp
-include src/wrapper.i
-include src/kqasm.g4
-include CMakeLists.txt
-include plugin/*
-include tools/antlr4_download.sh
