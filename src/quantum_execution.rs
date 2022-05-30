@@ -13,6 +13,14 @@ pub trait QuantumExecution {
     fn rz(&mut self, theta: f64, target: u32, control: &[u32]);
     fn measure(&mut self, target: u32) -> bool;
     fn dump(&mut self, qubits: &[u32]) -> ket::DumpData;
+    fn plugin(
+        &mut self,
+        name: &str,
+        target: &[u32],
+        control: &[u32],
+        adj: bool,
+        args: &str,
+    ) -> Result<(), String>;
 
     fn run(
         &mut self,
@@ -52,6 +60,11 @@ pub trait QuantumExecution {
 
         'quantum_run: loop {
             for instruction in quantum_code[current_block] {
+                if let Some(timeout) = metrics.timeout {
+                    if start.elapsed().as_secs() > timeout as u64 {
+                        return Err(String::from("Quantum execution timeout."));
+                    }
+                }
                 match instruction {
                     Instruction::Alloc { dirty, target } => {
                         let qubit_index = if *dirty & !qubit_stack_dirty.is_empty() {
@@ -123,7 +136,21 @@ pub trait QuantumExecution {
                             .reduce(|a, b| a | b)
                             .unwrap_or(0);
                     }
-                    Instruction::Plugin { .. } => continue,
+                    Instruction::Plugin {
+                        name,
+                        target,
+                        control,
+                        adj,
+                        args,
+                    } => {
+                        self.plugin(
+                            name,
+                            &qubit_vec_map(target, &qubit_map),
+                            &qubit_vec_map(control, &qubit_map),
+                            *adj,
+                            args,
+                        )?;
+                    }
                     Instruction::Jump { addr } => {
                         current_block = *addr as usize;
                     }

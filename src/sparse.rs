@@ -42,6 +42,36 @@ impl Sparse {
             &mut self.state_1
         }
     }
+
+    fn swap(&mut self, a: u32, b: u32) {
+        let (current_state, next_state) = self.get_states();
+
+        current_state.drain().for_each(|(mut state, amp)| {
+            if is_one_at_vec(&state, a) != is_one_at_vec(&state, b) {
+                state = bit_flip_vec(state, a);
+                state = bit_flip_vec(state, b);
+            }
+            next_state.insert(state, amp);
+        });
+    }
+
+    fn pown(&mut self, qubits_size: usize, args: &str) {
+        let (current_state, next_state) = self.get_states();
+        let args: Vec<&str> = args.split(' ').collect();
+        let x: u64 = args[0].parse().unwrap();
+        let n: u64 = args[1].parse().unwrap();
+        let l = bit_len(n);
+
+        current_state.drain().for_each(|(mut state, amp)| {
+            let a_b = state[0] & ((1 << qubits_size) - 1);
+            let a = a_b >> l;
+            let mut b = a_b & ((1 << l) - 1);
+            b *= crate::bitwise::pown(x, a, n);
+            let a_b = (a << l) | b;
+            state[0] = a_b;
+            next_state.insert(state, amp);
+        });
+    }
 }
 
 impl crate::QuantumExecution for Sparse {
@@ -52,6 +82,12 @@ impl crate::QuantumExecution for Sparse {
         zero.resize(self.num_states, 0u64);
         self.state_0.insert(zero, Complex64::new(1.0, 0.0));
         self.state = true;
+
+        for plugin in metrics.plugins.iter() {
+            if plugin != "pown" {
+                return Err(format!("Plugin {} not available", plugin));
+            }
+        }
 
         Ok(())
     }
@@ -196,7 +232,7 @@ impl crate::QuantumExecution for Sparse {
         let (current_state, next_state) = self.get_states();
 
         let cons_theta_2 = Complex64::from(f64::cos(theta / 2.0));
-        let p_sin_theta_2 = -Complex64::i() * f64::sin(theta / 2.0);
+        let p_sin_theta_2 = Complex64::from(f64::sin(theta / 2.0));
         let m_sin_theta_2 = -p_sin_theta_2;
 
         current_state.drain().for_each(|(state, amp)| {
@@ -324,6 +360,47 @@ impl crate::QuantumExecution for Sparse {
             amplitudes_real,
             amplitudes_img,
         }
+    }
+
+    fn plugin(
+        &mut self,
+        _name: &str,
+        target: &[u32],
+        control: &[u32],
+        adj: bool,
+        args: &str,
+    ) -> Result<(), String> {
+        if adj {
+            return Err(String::from("Plugin pown do not implement its inverse."));
+        }
+        if control.len() != 0 {
+            return Err(String::from("Plugin pown do not accept control qubits."));
+        }
+
+        let mut pos: Vec<usize> = (0..target.len()).collect();
+        let mut swap_list = Vec::new();
+
+        for (index, qubit) in target.iter().enumerate() {
+            if (*qubit as usize) == pos[index] {
+                continue;
+            };
+            swap_list.push((index, pos[index]));
+            let tmp = pos[index];
+            pos[index] = pos[target[index] as usize];
+            pos[target[index] as usize] = tmp;
+        }
+
+        for (a, b) in swap_list.iter() {
+            self.swap(*a as u32, *b as u32);
+        }
+
+        self.pown(target.len(), args);
+
+        for (a, b) in swap_list {
+            self.swap(a as u32, b as u32);
+        }
+
+        Ok(())
     }
 }
 

@@ -39,6 +39,41 @@ impl Dense {
             &mut self.state_1
         }
     }
+
+    fn swap(&mut self, a: u32, b: u32) {
+        let (current_state, next_state) = self.get_states();
+
+        next_state
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(state, amp)| {
+                *amp = current_state[if is_one_at(state, a) != is_one_at(state, b) {
+                    bit_flip(bit_flip(state, a), b)
+                } else {
+                    state
+                }];
+            });
+    }
+
+    fn pown(&mut self, qubits_size: usize, args: &str) {
+        let (current_state, next_state) = self.get_states();
+        let args: Vec<&str> = args.split(' ').collect();
+        let x: u64 = args[0].parse().unwrap();
+        let n: u64 = args[1].parse().unwrap();
+        let l = bit_len(n);
+
+        next_state
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(state, amp)| {
+                let a_b = (state & ((1 << qubits_size) - 1)) as u64;
+                let a = a_b >> l;
+                let mut b = a_b & ((1 << l) - 1);
+                b *= crate::bitwise::pown(x, a, n);
+                let a_b = (a << l) | b;
+                *amp = current_state[a_b as usize];
+            });
+    }
 }
 
 impl QuantumExecution for Dense {
@@ -47,6 +82,12 @@ impl QuantumExecution for Dense {
             return Err(String::from(
                 "Dense simulator do not allow more then 32 qubits.",
             ));
+        }
+
+        for plugin in metrics.plugins.iter() {
+            if plugin != "pown" {
+                return Err(format!("Plugin {} not available", plugin));
+            }
         }
 
         self.num_states = 1 << metrics.max_num_qubit;
@@ -201,7 +242,7 @@ impl QuantumExecution for Dense {
         let (current_state, next_state) = self.get_states();
 
         let cons_theta_2 = Complex64::from(f64::cos(theta / 2.0));
-        let p_sin_theta_2 = f64::sin(theta / 2.0);
+        let p_sin_theta_2 = Complex64::from(f64::sin(theta / 2.0));
         let m_sin_theta_2 = -p_sin_theta_2;
 
         next_state
@@ -331,6 +372,47 @@ impl QuantumExecution for Dense {
             amplitudes_real,
             amplitudes_img,
         }
+    }
+
+    fn plugin(
+        &mut self,
+        _name: &str,
+        target: &[u32],
+        control: &[u32],
+        adj: bool,
+        args: &str,
+    ) -> Result<(), String> {
+        if adj {
+            return Err(String::from("Plugin pown do not implement its inverse."));
+        }
+        if control.len() != 0 {
+            return Err(String::from("Plugin pown do not accept control qubits."));
+        }
+
+        let mut pos: Vec<usize> = (0..target.len()).collect();
+        let mut swap_list = Vec::new();
+
+        for (index, qubit) in target.iter().enumerate() {
+            if (*qubit as usize) == pos[index] {
+                continue;
+            };
+            swap_list.push((index, pos[index]));
+            let tmp = pos[index];
+            pos[index] = pos[target[index] as usize];
+            pos[target[index] as usize] = tmp;
+        }
+
+        for (a, b) in swap_list.iter() {
+            self.swap(*a as u32, *b as u32);
+        }
+
+        self.pown(target.len(), args);
+
+        for (a, b) in swap_list {
+            self.swap(a as u32, b as u32);
+        }
+
+        Ok(())
     }
 }
 
