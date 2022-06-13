@@ -1,7 +1,7 @@
 #[cfg(not(target_pointer_width = "64"))]
 compile_error!("compilation is only allowed for 64-bit targets");
 
-use quantum_execution::QuantumExecution;
+pub use quantum_execution::QuantumExecution;
 
 mod bitwise;
 mod c_wrapper;
