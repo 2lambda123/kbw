@@ -1,5 +1,7 @@
-use crate::bitwise::*;
+use crate::error::Result;
+use crate::{bitwise::*, error::KBWError};
 use itertools::Itertools;
+use ket::ir::Metrics;
 use num::complex::Complex64;
 use rand::distributions::WeightedIndex;
 use rand::prelude::*;
@@ -10,22 +12,12 @@ use twox_hash::RandomXxHashBuilder64;
 type StateMap = HashMap<Vec<u64>, Complex64, RandomXxHashBuilder64>;
 
 pub struct Sparse {
-    num_states: usize,
     state_0: StateMap,
     state_1: StateMap,
     state: bool,
 }
 
 impl Sparse {
-    pub fn new() -> Sparse {
-        Sparse {
-            num_states: 0,
-            state_0: Default::default(),
-            state_1: Default::default(),
-            state: true,
-        }
-    }
-
     fn get_states(&mut self) -> (&mut StateMap, &mut StateMap) {
         self.state = !self.state;
         if self.state {
@@ -43,7 +35,7 @@ impl Sparse {
         }
     }
 
-    fn swap(&mut self, a: u32, b: u32) {
+    fn swap(&mut self, a: usize, b: usize) {
         let (current_state, next_state) = self.get_states();
 
         current_state.drain().for_each(|(mut state, amp)| {
@@ -75,24 +67,30 @@ impl Sparse {
 }
 
 impl crate::QuantumExecution for Sparse {
-    fn prepare_for_execution(&mut self, metrics: &ket::Metrics) -> Result<(), String> {
-        self.num_states = ((metrics.max_num_qubit + 64) / 64) as usize;
-
-        let mut zero = Vec::new();
-        zero.resize(self.num_states, 0u64);
-        self.state_0.insert(zero, Complex64::new(1.0, 0.0));
-        self.state = true;
-
+    fn new(metrics: &Metrics) -> Result<Self> {
         for plugin in metrics.plugins.iter() {
             if plugin != "pown" {
-                return Err(format!("Plugin {} not available", plugin));
+                return Err(KBWError::UnsupportedPlugin);
             }
         }
 
-        Ok(())
+        let num_states = ((metrics.qubit_simultaneous + 64) / 64) as usize;
+
+        let mut state_0 = StateMap::default();
+
+        let mut zero = Vec::new();
+        zero.resize(num_states, 0u64);
+
+        state_0.insert(zero, Complex64::new(1.0, 0.0));
+
+        Ok(Sparse {
+            state_0,
+            state_1: StateMap::default(),
+            state: true,
+        })
     }
 
-    fn pauli_x(&mut self, target: u32, control: &[u32]) {
+    fn pauli_x(&mut self, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         current_state.drain().for_each(|(state, amp)| {
@@ -107,7 +105,7 @@ impl crate::QuantumExecution for Sparse {
         });
     }
 
-    fn pauli_y(&mut self, target: u32, control: &[u32]) {
+    fn pauli_y(&mut self, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         current_state.drain().for_each(|(state, mut amp)| {
@@ -124,7 +122,7 @@ impl crate::QuantumExecution for Sparse {
         });
     }
 
-    fn pauli_z(&mut self, target: u32, control: &[u32]) {
+    fn pauli_z(&mut self, target: usize, control: &[usize]) {
         let current_state = self.get_current_state();
 
         current_state.par_iter_mut().for_each(|(state, amp)| {
@@ -134,7 +132,7 @@ impl crate::QuantumExecution for Sparse {
         });
     }
 
-    fn hadamard(&mut self, target: u32, control: &[u32]) {
+    fn hadamard(&mut self, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         current_state.drain().for_each(|(state, mut amp)| {
@@ -177,7 +175,7 @@ impl crate::QuantumExecution for Sparse {
         });
     }
 
-    fn phase(&mut self, lambda: f64, target: u32, control: &[u32]) {
+    fn phase(&mut self, lambda: f64, target: usize, control: &[usize]) {
         let current_state = self.get_current_state();
 
         let phase = Complex64::exp(lambda * Complex64::i());
@@ -189,7 +187,7 @@ impl crate::QuantumExecution for Sparse {
         });
     }
 
-    fn rx(&mut self, theta: f64, target: u32, control: &[u32]) {
+    fn rx(&mut self, theta: f64, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         let cons_theta_2 = Complex64::from(f64::cos(theta / 2.0));
@@ -228,7 +226,7 @@ impl crate::QuantumExecution for Sparse {
         });
     }
 
-    fn ry(&mut self, theta: f64, target: u32, control: &[u32]) {
+    fn ry(&mut self, theta: f64, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         let cons_theta_2 = Complex64::from(f64::cos(theta / 2.0));
@@ -274,7 +272,7 @@ impl crate::QuantumExecution for Sparse {
         });
     }
 
-    fn rz(&mut self, theta: f64, target: u32, control: &[u32]) {
+    fn rz(&mut self, theta: f64, target: usize, control: &[usize]) {
         let current_state = self.get_current_state();
 
         let phase_0 = Complex64::exp(-theta / 2.0 * Complex64::i());
@@ -291,7 +289,7 @@ impl crate::QuantumExecution for Sparse {
         });
     }
 
-    fn measure(&mut self, target: u32) -> bool {
+    fn measure(&mut self, target: usize) -> bool {
         let (current_state, next_state) = self.get_states();
 
         let p1: f64 = current_state
@@ -326,7 +324,7 @@ impl crate::QuantumExecution for Sparse {
         result
     }
 
-    fn dump(&mut self, qubits: &[u32]) -> ket::DumpData {
+    fn dump(&mut self, qubits: &[usize]) -> ket::DumpData {
         let mut basis_states = Vec::new();
         let mut amplitudes_real = Vec::new();
         let mut amplitudes_img = Vec::new();
@@ -362,21 +360,7 @@ impl crate::QuantumExecution for Sparse {
         }
     }
 
-    fn plugin(
-        &mut self,
-        _name: &str,
-        target: &[u32],
-        control: &[u32],
-        adj: bool,
-        args: &str,
-    ) -> Result<(), String> {
-        if adj {
-            return Err(String::from("Plugin pown do not implement its inverse."));
-        }
-        if control.len() != 0 {
-            return Err(String::from("Plugin pown do not accept control qubits."));
-        }
-
+    fn plugin(&mut self, _name: &str, args: &str, target: &[usize]) -> Result<()> {
         let mut pos: Vec<usize> = (0..target.len()).collect();
         let mut swap_list = Vec::new();
 
@@ -386,36 +370,86 @@ impl crate::QuantumExecution for Sparse {
             };
             swap_list.push((index, pos[index]));
             let tmp = pos[index];
-            pos[index] = pos[target[index] as usize];
-            pos[target[index] as usize] = tmp;
+            pos[index] = pos[target[index]];
+            pos[target[index]] = tmp;
         }
 
         for (a, b) in swap_list.iter() {
-            self.swap(*a as u32, *b as u32);
+            self.swap(*a, *b);
         }
 
         self.pown(target.len(), args);
 
         for (a, b) in swap_list {
-            self.swap(a as u32, b as u32);
+            self.swap(a, b);
         }
 
         Ok(())
+    }
+
+    fn unitary(&mut self, gate: &[[(f64, f64); 2]; 2], target: usize, control: &[usize]) {
+        let [[(ar, ai), (br, bi)], [(cr, ci), (dr, di)]] = gate;
+        let [[a, b], [c, d]] = [
+            [Complex64::new(*ar, *ai), Complex64::new(*br, *bi)],
+            [Complex64::new(*cr, *ci), Complex64::new(*dr, *di)],
+        ];
+
+        let (current_state, next_state) = self.get_states();
+
+        current_state.drain().for_each(|(state, mut amp)| {
+            if ctrl_check_vec(&state, control) {
+                let state_flipped = bit_flip_vec(Vec::clone(&state), target);
+                let amp_flipped = amp * if is_one_at_vec(&state, target) { b } else { c };
+
+                match next_state.get_mut(&state_flipped) {
+                    Some(c_amp) => {
+                        *c_amp += amp_flipped;
+                        if c_amp.l1_norm() < 1e-15 {
+                            next_state.remove(&state_flipped);
+                        }
+                    }
+                    None => {
+                        next_state.insert(state_flipped, amp_flipped);
+                    }
+                }
+
+                amp *= if is_one_at_vec(&state, target) { d } else { a };
+
+                match next_state.get_mut(&state) {
+                    Some(c_amp) => {
+                        *c_amp += amp;
+                        if c_amp.l1_norm() < 1e-15 {
+                            next_state.remove(&state);
+                        }
+                    }
+                    None => {
+                        next_state.insert(state, amp);
+                    }
+                }
+            } else {
+                next_state.insert(state, amp);
+            }
+        });
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::f64::consts::FRAC_1_SQRT_2;
+
+    use crate::*;
     use ket::*;
 
     fn bell() -> (Process, Qubit, Qubit) {
         let mut p = Process::new(0);
-        let a = p.alloc(false).unwrap();
-        let b = p.alloc(false).unwrap();
+        let a = p.allocate_qubit(false).unwrap();
+        let b = p.allocate_qubit(false).unwrap();
+
         p.apply_gate(QuantumGate::Hadamard, &a).unwrap();
         p.ctrl_push(&[&a]).unwrap();
         p.apply_gate(QuantumGate::PauliX, &b).unwrap();
         p.ctrl_pop().unwrap();
+
         (p, a, b)
     }
 
@@ -423,8 +457,11 @@ mod tests {
     fn dump_bell() {
         let (mut p, a, b) = bell();
         let d = p.dump(&[&a, &b]).unwrap();
-        crate::run_sparse_from_process(&mut p).unwrap();
-        assert!(d.value().is_some());
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Sparse>(&mut p).unwrap();
+
         println!("{:?}", d);
     }
 
@@ -432,8 +469,13 @@ mod tests {
     fn measure_bell() {
         for _ in 0..10 {
             let (mut p, mut a, mut b) = bell();
+
             let m = p.measure(&mut [&mut a, &mut b]).unwrap();
-            crate::run_sparse_from_process(&mut p).unwrap();
+
+            p.prepare_for_execution().unwrap();
+
+            run_and_set_result::<Sparse>(&mut p).unwrap();
+
             let m = m.value().unwrap();
             assert!(m == 0 || m == 3);
         }
@@ -444,7 +486,7 @@ mod tests {
         let mut p = Process::new(0);
         let q: Vec<Qubit> = (0..3)
             .into_iter()
-            .map(|_| p.alloc(false).unwrap())
+            .map(|_| p.allocate_qubit(false).unwrap())
             .collect();
 
         q.iter()
@@ -452,8 +494,11 @@ mod tests {
 
         let q: Vec<&Qubit> = q.iter().collect();
         let d = p.dump(&q).unwrap();
-        crate::run_sparse_from_process(&mut p).unwrap();
-        assert!(d.value().is_some());
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Sparse>(&mut p).unwrap();
+
         println!("{:?}", d);
     }
 
@@ -462,7 +507,7 @@ mod tests {
         let mut p = Process::new(0);
         let mut q: Vec<Qubit> = (0..10)
             .into_iter()
-            .map(|_| p.alloc(false).unwrap())
+            .map(|_| p.allocate_qubit(false).unwrap())
             .collect();
 
         q.iter()
@@ -476,9 +521,63 @@ mod tests {
 
         let mut q: Vec<&mut Qubit> = q.iter_mut().collect();
         let m = p.measure(&mut q).unwrap();
-        crate::run_sparse_from_process(&mut p).unwrap();
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Sparse>(&mut p).unwrap();
+
         assert!(m.value().unwrap() == ((1 << 10) - 1));
+        println!("Execution Time = {}", p.exec_time().unwrap());
+    }
+
+    #[test]
+    fn measure_h_10() {
+        let mut p = Process::new(0);
+        let mut q: Vec<Qubit> = (0..10)
+            .into_iter()
+            .map(|_| p.allocate_qubit(false).unwrap())
+            .collect();
+
+        q.iter()
+            .for_each(|q| p.apply_gate(QuantumGate::Hadamard, q).unwrap());
+
+        let mut q: Vec<&mut Qubit> = q.iter_mut().collect();
+        let m = p.measure(&mut q).unwrap();
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Sparse>(&mut p).unwrap();
+
         println!("{:?}; Execution Time = {}", m, p.exec_time().unwrap());
+    }
+
+    #[test]
+    fn unitary_hadamard() {
+        let mut p = Process::new(0);
+
+        let q = p.allocate_qubit(false).unwrap();
+
+        p.apply_gate(QuantumGate::PauliX, &q).unwrap();
+        p.apply_gate(
+            QuantumGate::unitary([
+                [(FRAC_1_SQRT_2, 0.0), (FRAC_1_SQRT_2, 0.0)],
+                [(FRAC_1_SQRT_2, 0.0), (-FRAC_1_SQRT_2, 0.0)],
+            ])
+            .unwrap(),
+            &q,
+        )
+        .unwrap();
+
+        p.apply_gate(QuantumGate::Hadamard, &q).unwrap();
+
+        let d = p.dump(&[&q]).unwrap();
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Sparse>(&mut p).unwrap();
+
+        assert!(d.value().as_ref().unwrap().basis_states()[0][0] == 1);
+        println!("{:?}", d);
     }
 
     #[test]
@@ -486,7 +585,7 @@ mod tests {
         let mut p = Process::new(0);
         let q: Vec<Qubit> = (0..100)
             .into_iter()
-            .map(|_| p.alloc(false).unwrap())
+            .map(|_| p.allocate_qubit(false).unwrap())
             .collect();
 
         p.apply_gate(QuantumGate::Hadamard, &q[0]).unwrap();
@@ -501,7 +600,11 @@ mod tests {
 
         let q: Vec<&Qubit> = q.iter().collect();
         let d = p.dump(&q).unwrap();
-        crate::run_sparse_from_process(&mut p).unwrap();
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Sparse>(&mut p).unwrap();
+
         println!("{:?}; Execution Time = {}", d, p.exec_time().unwrap());
     }
 }

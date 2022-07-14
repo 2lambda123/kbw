@@ -1,5 +1,7 @@
 use crate::bitwise::*;
+use crate::error::{KBWError, Result};
 use crate::quantum_execution::QuantumExecution;
+use ket::ir::Metrics;
 use num::{complex::Complex64, Zero};
 use rand::distributions::WeightedIndex;
 use rand::prelude::*;
@@ -7,22 +9,12 @@ use rayon::prelude::*;
 use std::f64::consts::FRAC_1_SQRT_2;
 
 pub struct Dense {
-    num_states: usize,
     state_0: Vec<Complex64>,
     state_1: Vec<Complex64>,
     state: bool,
 }
 
 impl Dense {
-    pub fn new() -> Dense {
-        Dense {
-            num_states: 0,
-            state_0: Vec::new(),
-            state_1: Vec::new(),
-            state: true,
-        }
-    }
-
     fn get_states(&mut self) -> (&mut [Complex64], &mut [Complex64]) {
         self.state = !self.state;
         if self.state {
@@ -40,7 +32,7 @@ impl Dense {
         }
     }
 
-    fn swap(&mut self, a: u32, b: u32) {
+    fn swap(&mut self, a: usize, b: usize) {
         let (current_state, next_state) = self.get_states();
 
         next_state
@@ -77,31 +69,36 @@ impl Dense {
 }
 
 impl QuantumExecution for Dense {
-    fn prepare_for_execution(&mut self, metrics: &ket::Metrics) -> Result<(), String> {
-        if metrics.max_num_qubit > 32 {
-            return Err(String::from(
-                "Dense simulator do not allow more then 32 qubits.",
-            ));
+    fn new(metrics: &Metrics) -> Result<Self>
+    where
+        Self: Sized,
+    {
+        if metrics.qubit_simultaneous > 32 {
+            return Err(KBWError::UnsupportedNumberOfQubits);
         }
 
         for plugin in metrics.plugins.iter() {
             if plugin != "pown" {
-                return Err(format!("Plugin {} not available", plugin));
+                return Err(KBWError::UnsupportedPlugin);
             }
         }
 
-        self.num_states = 1 << metrics.max_num_qubit;
+        let num_states = 1 << metrics.qubit_simultaneous;
+        let mut state_0 = Vec::new();
+        let mut state_1 = Vec::new();
+        state_0.resize(num_states, Complex64::zero());
+        state_1.resize(num_states, Complex64::zero());
 
-        self.state_0.resize(self.num_states, Complex64::zero());
-        self.state_1.resize(self.num_states, Complex64::zero());
+        state_0[0] = Complex64::new(1.0, 0.0);
 
-        self.state_0[0] = Complex64::new(1.0, 0.0);
-        self.state = true;
-
-        Ok(())
+        Ok(Dense {
+            state: true,
+            state_0,
+            state_1,
+        })
     }
 
-    fn pauli_x(&mut self, target: u32, control: &[u32]) {
+    fn pauli_x(&mut self, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         next_state
@@ -116,7 +113,7 @@ impl QuantumExecution for Dense {
             });
     }
 
-    fn pauli_y(&mut self, target: u32, control: &[u32]) {
+    fn pauli_y(&mut self, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         next_state
@@ -136,7 +133,7 @@ impl QuantumExecution for Dense {
             });
     }
 
-    fn pauli_z(&mut self, target: u32, control: &[u32]) {
+    fn pauli_z(&mut self, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         next_state
@@ -151,7 +148,7 @@ impl QuantumExecution for Dense {
             });
     }
 
-    fn hadamard(&mut self, target: u32, control: &[u32]) {
+    fn hadamard(&mut self, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         next_state
@@ -187,7 +184,7 @@ impl QuantumExecution for Dense {
             });
     }
 
-    fn phase(&mut self, lambda: f64, target: u32, control: &[u32]) {
+    fn phase(&mut self, lambda: f64, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         let phase = Complex64::exp(lambda * Complex64::i());
@@ -204,7 +201,7 @@ impl QuantumExecution for Dense {
             });
     }
 
-    fn rx(&mut self, theta: f64, target: u32, control: &[u32]) {
+    fn rx(&mut self, theta: f64, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         let cons_theta_2 = Complex64::from(f64::cos(theta / 2.0));
@@ -238,7 +235,7 @@ impl QuantumExecution for Dense {
             });
     }
 
-    fn ry(&mut self, theta: f64, target: u32, control: &[u32]) {
+    fn ry(&mut self, theta: f64, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         let cons_theta_2 = Complex64::from(f64::cos(theta / 2.0));
@@ -278,7 +275,7 @@ impl QuantumExecution for Dense {
             });
     }
 
-    fn rz(&mut self, theta: f64, target: u32, control: &[u32]) {
+    fn rz(&mut self, theta: f64, target: usize, control: &[usize]) {
         let (current_state, next_state) = self.get_states();
 
         let phase_0 = Complex64::exp(-theta / 2.0 * Complex64::i());
@@ -301,7 +298,7 @@ impl QuantumExecution for Dense {
             });
     }
 
-    fn measure(&mut self, target: u32) -> bool {
+    fn measure(&mut self, target: usize) -> bool {
         let (current_state, next_state) = self.get_states();
 
         let p1: f64 = current_state
@@ -342,7 +339,7 @@ impl QuantumExecution for Dense {
         result
     }
 
-    fn dump(&mut self, qubits: &[u32]) -> ket::DumpData {
+    fn dump(&mut self, qubits: &[usize]) -> ket::DumpData {
         let mut basis_states = Vec::new();
         let mut amplitudes_real = Vec::new();
         let mut amplitudes_img = Vec::new();
@@ -374,21 +371,7 @@ impl QuantumExecution for Dense {
         }
     }
 
-    fn plugin(
-        &mut self,
-        _name: &str,
-        target: &[u32],
-        control: &[u32],
-        adj: bool,
-        args: &str,
-    ) -> Result<(), String> {
-        if adj {
-            return Err(String::from("Plugin pown do not implement its inverse."));
-        }
-        if control.len() != 0 {
-            return Err(String::from("Plugin pown do not accept control qubits."));
-        }
-
+    fn plugin(&mut self, _name: &str, args: &str, target: &[usize]) -> Result<()> {
         let mut pos: Vec<usize> = (0..target.len()).collect();
         let mut swap_list = Vec::new();
 
@@ -403,32 +386,75 @@ impl QuantumExecution for Dense {
         }
 
         for (a, b) in swap_list.iter() {
-            self.swap(*a as u32, *b as u32);
+            self.swap(*a, *b);
         }
 
         self.pown(target.len(), args);
 
         for (a, b) in swap_list {
-            self.swap(a as u32, b as u32);
+            self.swap(a, b);
         }
 
         Ok(())
+    }
+
+    fn unitary(&mut self, gate: &[[(f64, f64); 2]; 2], target: usize, control: &[usize]) {
+        let [[(ar, ai), (br, bi)], [(cr, ci), (dr, di)]] = gate;
+        let [[a, b], [c, d]] = [
+            [Complex64::new(*ar, *ai), Complex64::new(*br, *bi)],
+            [Complex64::new(*cr, *ci), Complex64::new(*dr, *di)],
+        ];
+
+        let (current_state, next_state) = self.get_states();
+
+        next_state
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(state, amp)| {
+                if ctrl_check(state, control) {
+                    *amp = current_state[bit_flip(state, target)]
+                        * if is_one_at(state, target) { b } else { c }
+                } else {
+                    *amp = Complex64::zero();
+                }
+            });
+
+        current_state
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(state, amp)| {
+                if ctrl_check(state, control) {
+                    *amp *= if is_one_at(state, target) { d } else { a };
+                }
+            });
+
+        next_state
+            .par_iter_mut()
+            .zip(current_state.par_iter())
+            .for_each(|(next_amp, current_amp)| {
+                *next_amp += *current_amp;
+            });
     }
 }
 
 #[cfg(test)]
 mod tests {
 
+    use std::f64::consts::FRAC_1_SQRT_2;
+
+    use crate::*;
     use ket::*;
 
     fn bell() -> (Process, Qubit, Qubit) {
         let mut p = Process::new(0);
-        let a = p.alloc(false).unwrap();
-        let b = p.alloc(false).unwrap();
+        let a = p.allocate_qubit(false).unwrap();
+        let b = p.allocate_qubit(false).unwrap();
+
         p.apply_gate(QuantumGate::Hadamard, &a).unwrap();
         p.ctrl_push(&[&a]).unwrap();
         p.apply_gate(QuantumGate::PauliX, &b).unwrap();
         p.ctrl_pop().unwrap();
+
         (p, a, b)
     }
 
@@ -436,8 +462,11 @@ mod tests {
     fn dump_bell() {
         let (mut p, a, b) = bell();
         let d = p.dump(&[&a, &b]).unwrap();
-        crate::run_dense_from_process(&mut p).unwrap();
-        assert!(d.value().is_some());
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Dense>(&mut p).unwrap();
+
         println!("{:?}", d);
     }
 
@@ -445,8 +474,13 @@ mod tests {
     fn measure_bell() {
         for _ in 0..10 {
             let (mut p, mut a, mut b) = bell();
+
             let m = p.measure(&mut [&mut a, &mut b]).unwrap();
-            crate::run_dense_from_process(&mut p).unwrap();
+
+            p.prepare_for_execution().unwrap();
+
+            run_and_set_result::<Dense>(&mut p).unwrap();
+
             let m = m.value().unwrap();
             assert!(m == 0 || m == 3);
         }
@@ -457,7 +491,7 @@ mod tests {
         let mut p = Process::new(0);
         let q: Vec<Qubit> = (0..3)
             .into_iter()
-            .map(|_| p.alloc(false).unwrap())
+            .map(|_| p.allocate_qubit(false).unwrap())
             .collect();
 
         q.iter()
@@ -465,8 +499,11 @@ mod tests {
 
         let q: Vec<&Qubit> = q.iter().collect();
         let d = p.dump(&q).unwrap();
-        crate::run_dense_from_process(&mut p).unwrap();
-        assert!(d.value().is_some());
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Dense>(&mut p).unwrap();
+
         println!("{:?}", d);
     }
 
@@ -475,7 +512,7 @@ mod tests {
         let mut p = Process::new(0);
         let mut q: Vec<Qubit> = (0..20)
             .into_iter()
-            .map(|_| p.alloc(false).unwrap())
+            .map(|_| p.allocate_qubit(false).unwrap())
             .collect();
 
         q.iter()
@@ -489,9 +526,13 @@ mod tests {
 
         let mut q: Vec<&mut Qubit> = q.iter_mut().collect();
         let m = p.measure(&mut q).unwrap();
-        crate::run_dense_from_process(&mut p).unwrap();
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Dense>(&mut p).unwrap();
+
         assert!(m.value().unwrap() == ((1 << 20) - 1));
-        println!("{:?}; Execution Time = {}", m, p.exec_time().unwrap());
+        println!("Execution Time = {}", p.exec_time().unwrap());
     }
 
     #[test]
@@ -499,7 +540,7 @@ mod tests {
         let mut p = Process::new(0);
         let mut q: Vec<Qubit> = (0..20)
             .into_iter()
-            .map(|_| p.alloc(false).unwrap())
+            .map(|_| p.allocate_qubit(false).unwrap())
             .collect();
 
         q.iter()
@@ -507,7 +548,40 @@ mod tests {
 
         let mut q: Vec<&mut Qubit> = q.iter_mut().collect();
         let m = p.measure(&mut q).unwrap();
-        crate::run_dense_from_process(&mut p).unwrap();
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Dense>(&mut p).unwrap();
+
         println!("{:?}; Execution Time = {}", m, p.exec_time().unwrap());
+    }
+
+    #[test]
+    fn unitary_hadamard() {
+        let mut p = Process::new(0);
+
+        let q = p.allocate_qubit(false).unwrap();
+
+        p.apply_gate(QuantumGate::PauliX, &q).unwrap();
+        p.apply_gate(
+            QuantumGate::unitary([
+                [(FRAC_1_SQRT_2, 0.0), (FRAC_1_SQRT_2, 0.0)],
+                [(FRAC_1_SQRT_2, 0.0), (-FRAC_1_SQRT_2, 0.0)],
+            ])
+            .unwrap(),
+            &q,
+        )
+        .unwrap();
+
+        p.apply_gate(QuantumGate::Hadamard, &q).unwrap();
+
+        let d = p.dump(&[&q]).unwrap();
+
+        p.prepare_for_execution().unwrap();
+
+        run_and_set_result::<Dense>(&mut p).unwrap();
+
+        assert!(d.value().as_ref().unwrap().basis_states()[0][0] == 1);
+        println!("{:?}", d);
     }
 }
