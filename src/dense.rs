@@ -69,10 +69,7 @@ impl Dense {
 }
 
 impl QuantumExecution for Dense {
-    fn new(metrics: &Metrics) -> Result<Self>
-    where
-        Self: Sized,
-    {
+    fn new(metrics: &Metrics) -> Result<Self> {
         if metrics.qubit_simultaneous > 32 {
             return Err(KBWError::UnsupportedNumberOfQubits);
         }

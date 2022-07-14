@@ -118,3 +118,18 @@ pub extern "C" fn kbw_result_delete(result: *mut Vec<u8>) -> i32 {
     unsafe { Box::from_raw(result) };
     KBWError::Success.error_code()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::SimMode;
+    use num::FromPrimitive;
+
+    #[test]
+    fn print_sim_mode() {
+        let mut sim_mode = 0;
+        while let Some(mode) = SimMode::from_i32(sim_mode) {
+            println!("#define KBW_{:#?} {}", mode, sim_mode);
+            sim_mode += 1;
+        }
+    }
+}

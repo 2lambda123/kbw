@@ -1,18 +1,27 @@
 #pragma once
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
-typedef void *kbw_result_t;
+typedef void* kbw_ket_process_t;
+typedef int32_t kbw_error_code_t;
 
-const uint8_t *kbw_error_message(size_t *size);
+#define KBW_DENSE 0
+#define KBW_SPARSE 1
 
-void kbw_result_delete(kbw_result_t result);
-const uint8_t *kbw_result_get(kbw_result_t result, size_t *size);
+#define KBW_JSON 0
+#define KBW_BIN 1
 
-kbw_result_t kbw_run_dense_from_json(const uint8_t *quantum_code, size_t quantum_code_size, const uint8_t *metrics, size_t metrics_size);
-kbw_result_t kbw_run_dense_from_bin(const uint8_t *quantum_code, size_t quantum_code_size, const uint8_t *metrics, size_t metrics_size);
-int32_t kbw_run_dense_from_process(void *process);
+const uint8_t* kbw_error_message(int32_t error_code, size_t* size);
 
-kbw_result_t kbw_run_sparse_from_json(const uint8_t *quantum_code, size_t quantum_code_size, const uint8_t *metrics, size_t metrics_size);
-kbw_result_t kbw_run_sparse_from_bin(const uint8_t *quantum_code, size_t quantum_code_size, const uint8_t *metrics, size_t metrics_size);
-int32_t kbw_run_sparse_from_process(void *process);
+kbw_error_code_t kbw_run_and_set_result(kbw_ket_process_t process,
+                                        int32_t sim_mode);
+
+kbw_error_code_t kbw_run_serialized(const uint8_t* quantum_code,
+                                    size_t quantum_code_size,
+                                    const uint8_t* metrics, size_t metrics_size,
+                                    int32_t data_type, int32_t sim_mode,
+                                    void** result);
+
+kbw_error_code_t kbw_result_get(void* result, uint8_t** data, size_t* size);
+
+kbw_error_code_t kbw_result_delete(void* result);
