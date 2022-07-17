@@ -143,7 +143,7 @@ impl crate::QuantumExecution for Sparse {
                 match next_state.get_mut(&state_flipped) {
                     Some(c_amp) => {
                         *c_amp += amp;
-                        if c_amp.l1_norm() < 1e-15 {
+                        if c_amp.norm() < 1e-15 {
                             next_state.remove(&state_flipped);
                         }
                     }
@@ -161,7 +161,7 @@ impl crate::QuantumExecution for Sparse {
                 match next_state.get_mut(&state) {
                     Some(c_amp) => {
                         *c_amp += amp;
-                        if c_amp.l1_norm() < 1e-15 {
+                        if c_amp.norm() < 1e-15 {
                             next_state.remove(&state);
                         }
                     }
@@ -200,7 +200,7 @@ impl crate::QuantumExecution for Sparse {
                 match next_state.get_mut(&state_flipped) {
                     Some(c_amp) => {
                         *c_amp += amp * sin_theta_2;
-                        if c_amp.l1_norm() < 1e-15 {
+                        if c_amp.norm() < 1e-15 {
                             next_state.remove(&state_flipped);
                         }
                     }
@@ -212,7 +212,7 @@ impl crate::QuantumExecution for Sparse {
                 match next_state.get_mut(&state) {
                     Some(c_amp) => {
                         *c_amp += amp * cons_theta_2;
-                        if c_amp.l1_norm() < 1e-15 {
+                        if c_amp.norm() < 1e-15 {
                             next_state.remove(&state);
                         }
                     }
@@ -246,7 +246,7 @@ impl crate::QuantumExecution for Sparse {
                 match next_state.get_mut(&state_flipped) {
                     Some(c_amp) => {
                         *c_amp += flipped_amp;
-                        if c_amp.l1_norm() < 1e-15 {
+                        if c_amp.norm() < 1e-15 {
                             next_state.remove(&state_flipped);
                         }
                     }
@@ -258,7 +258,7 @@ impl crate::QuantumExecution for Sparse {
                 match next_state.get_mut(&state) {
                     Some(c_amp) => {
                         *c_amp += amp * cons_theta_2;
-                        if c_amp.l1_norm() < 1e-15 {
+                        if c_amp.norm() < 1e-15 {
                             next_state.remove(&state);
                         }
                     }
@@ -296,7 +296,7 @@ impl crate::QuantumExecution for Sparse {
             .iter()
             .map(|(state, amp)| {
                 if is_one_at_vec(state, target) {
-                    amp.l1_norm().powi(2)
+                    amp.norm().powi(2)
                 } else {
                     0.0
                 }
@@ -404,7 +404,7 @@ impl crate::QuantumExecution for Sparse {
                 match next_state.get_mut(&state_flipped) {
                     Some(c_amp) => {
                         *c_amp += amp_flipped;
-                        if c_amp.l1_norm() < 1e-15 {
+                        if c_amp.norm() < 1e-15 {
                             next_state.remove(&state_flipped);
                         }
                     }
@@ -418,7 +418,7 @@ impl crate::QuantumExecution for Sparse {
                 match next_state.get_mut(&state) {
                     Some(c_amp) => {
                         *c_amp += amp;
-                        if c_amp.l1_norm() < 1e-15 {
+                        if c_amp.norm() < 1e-15 {
                             next_state.remove(&state);
                         }
                     }

@@ -303,7 +303,7 @@ impl QuantumExecution for Dense {
             .enumerate()
             .map(|(state, amp)| {
                 if is_one_at(state, target) {
-                    amp.l1_norm().powi(2)
+                    amp.norm().powi(2)
                 } else {
                     0.0
                 }
@@ -346,7 +346,7 @@ impl QuantumExecution for Dense {
         state
             .iter()
             .enumerate()
-            .filter(|(_state, amp)| amp.l1_norm() > 1e-15)
+            .filter(|(_state, amp)| amp.norm() > 1e-15)
             .for_each(|(state, amp)| {
                 let state = qubits
                     .iter()

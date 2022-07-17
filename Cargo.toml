@@ -1,6 +1,6 @@
 [package]
 name = "kbw"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Evandro Chagas Ribeiro da Rosa <ev.crr97@gmail.com>"]
 description = "Ket Bitwise Simulator"
 repository = "https://gitlab.com/quantum-ket/kbw"
