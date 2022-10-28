@@ -43,10 +43,9 @@ pub fn run<S: QuantumExecution>(
 
     let mut dump_register = Vec::with_capacity(metrics.dump_count as usize);
     for _ in 0..metrics.dump_count {
-        dump_register.push(ket::DumpData {
+        dump_register.push(ket::DumpData::Probability {
             basis_states: Vec::new(),
-            amplitudes_img: Vec::new(),
-            amplitudes_real: Vec::new(),
+            probabilities: Vec::new(),
         });
     }
 

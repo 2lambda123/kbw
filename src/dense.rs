@@ -339,7 +339,7 @@ impl QuantumExecution for Dense {
     fn dump(&mut self, qubits: &[usize]) -> ket::DumpData {
         let mut basis_states = Vec::new();
         let mut amplitudes_real = Vec::new();
-        let mut amplitudes_img = Vec::new();
+        let mut amplitudes_imag = Vec::new();
 
         let state = self.get_current_state();
 
@@ -358,13 +358,13 @@ impl QuantumExecution for Dense {
 
                 basis_states.push(Vec::from([state as u64]));
                 amplitudes_real.push(amp.re);
-                amplitudes_img.push(amp.im);
+                amplitudes_imag.push(amp.im);
             });
 
-        ket::DumpData {
+        ket::DumpData::Vector {
             basis_states,
             amplitudes_real,
-            amplitudes_img,
+            amplitudes_imag,
         }
     }
 
