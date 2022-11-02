@@ -1,4 +1,8 @@
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -25,3 +29,7 @@ kbw_error_code_t kbw_run_serialized(const uint8_t* quantum_code,
 kbw_error_code_t kbw_result_get(void* result, uint8_t** data, size_t* size);
 
 kbw_error_code_t kbw_result_delete(void* result);
+
+#ifdef __cplusplus
+}
+#endif
