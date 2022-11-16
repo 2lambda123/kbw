@@ -3,8 +3,6 @@ use ket::code_block::CodeBlock;
 use ket::instruction::{ClassicalOp, EndInstruction, Instruction, QuantumGate};
 use ket::ir::{Metrics, ResultData};
 use ket::Process;
-use std::cell::RefCell;
-use std::rc::Rc;
 use std::time::Instant;
 
 pub trait QuantumExecution {
@@ -239,17 +237,5 @@ pub fn run_and_set_result<S: QuantumExecution>(process: &mut Process) -> Result<
     let mut sim = S::new(metrics)?;
     let result = run(&mut sim, &instructions, metrics)?;
     process.set_result(result).unwrap();
-    Ok(())
-}
-
-pub fn execute<S: QuantumExecution>(process: &Rc<RefCell<Process>>) -> Result<()> {
-    let mut process = process.borrow_mut();
-    let metrics = process.metrics();
-    let instructions = process.blocks();
-    let mut sim = S::new(metrics)?;
-    let result = run(&mut sim, &instructions, metrics)?;
-
-    process.set_result(result).unwrap();
-
     Ok(())
 }

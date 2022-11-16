@@ -518,7 +518,7 @@ mod tests {
 
         p.borrow_mut().prepare_for_execution()?;
 
-        crate::execute::<crate::Dense>(&p)?;
+        crate::run_and_set_result::<crate::Dense>(&mut p.borrow_mut())?;
 
         println!("Measured: {}", m.value().unwrap());
         println!("Execution time: {}s", p.borrow().exec_time().unwrap());
