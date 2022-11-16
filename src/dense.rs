@@ -440,7 +440,7 @@ mod tests {
     use std::f64::consts::FRAC_1_SQRT_2;
 
     use crate::*;
-    use ket::*;
+    use ket::{code_block::CodeBlock, *};
 
     fn bell() -> (Process, Qubit, Qubit) {
         let mut p = Process::new(0);
@@ -462,9 +462,68 @@ mod tests {
 
         p.prepare_for_execution().unwrap();
 
-        run_and_set_result::<Dense>(&mut p).unwrap();
+        p.serialize_metrics(serialize::DataType::JSON);
+        p.serialize_quantum_code(serialize::DataType::JSON);
+
+        let metrics =
+            if let serialize::SerializedData::JSON(data) = p.get_serialized_metrics().unwrap() {
+                print!("METRICS\n{}", data);
+                data
+            } else {
+                panic!()
+            };
+
+        let quantum_code = if let serialize::SerializedData::JSON(data) =
+            p.get_serialized_quantum_code().unwrap()
+        {
+            print!("CODE\n{}", data);
+            data
+        } else {
+            panic!()
+        };
+
+        let mut sim = Dense::new(&serde_json::from_slice(metrics.as_bytes()).unwrap()).unwrap();
+        let result = serde_json::to_string_pretty(
+            &run(
+                &mut sim,
+                &serde_json::from_slice::<Vec<CodeBlock>>(quantum_code.as_bytes())
+                    .unwrap()
+                    .iter()
+                    .collect::<Vec<&ket::code_block::CodeBlock>>(),
+                &serde_json::from_slice(metrics.as_bytes()).unwrap(),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+        print!("RESULT\n{}", result);
+
+        p.set_result(serde_json::from_str(&result).unwrap())
+            .unwrap();
 
         println!("{:?}", d);
+    }
+
+    #[test]
+    fn test_better_bell() -> std::result::Result<(), Box<dyn std::error::Error>> {
+        let p = ket::Process::new_ptr();
+
+        let a = ket::Quant::new(&p, 1)?;
+        let b = ket::Quant::new(&p, 1)?;
+
+        ket::h(&a)?;
+        ket::ctrl(&a, || ket::x(&b))??;
+
+        let m = ket::measure(&mut ket::Quant::cat(&[&a, &b])?)?;
+
+        p.borrow_mut().prepare_for_execution()?;
+
+        crate::execute::<crate::Dense>(&p)?;
+
+        println!("Measured: {}", m.value().unwrap());
+        println!("Execution time: {}s", p.borrow().exec_time().unwrap());
+
+        Ok(())
     }
 
     #[test]

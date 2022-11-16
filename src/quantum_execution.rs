@@ -243,12 +243,13 @@ pub fn run_and_set_result<S: QuantumExecution>(process: &mut Process) -> Result<
 }
 
 pub fn execute<S: QuantumExecution>(process: &Rc<RefCell<Process>>) -> Result<()> {
-    let binding = process.borrow();
-    let metrics = binding.metrics();
-    let instructions = binding.blocks();
+    let mut process = process.borrow_mut();
+    let metrics = process.metrics();
+    let instructions = process.blocks();
     let mut sim = S::new(metrics)?;
     let result = run(&mut sim, &instructions, metrics)?;
-    process.borrow_mut().set_result(result).unwrap();
+
+    process.set_result(result).unwrap();
 
     Ok(())
 }
