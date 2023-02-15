@@ -7,6 +7,7 @@ pub mod dense;
 pub mod error;
 pub mod quantum_execution;
 pub mod sparse;
+pub mod convert;
 
 pub use dense::Dense;
 pub use quantum_execution::*;

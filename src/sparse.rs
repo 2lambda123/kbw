@@ -1,3 +1,4 @@
+use crate::convert;
 use crate::error::Result;
 use crate::{bitwise::*, error::KBWError};
 use itertools::Itertools;
@@ -15,6 +16,7 @@ pub struct Sparse {
     state_0: StateMap,
     state_1: StateMap,
     state: bool,
+    rng: StdRng,
 }
 
 impl Sparse {
@@ -27,11 +29,28 @@ impl Sparse {
         }
     }
 
-    fn get_current_state(&mut self) -> &mut StateMap {
+    fn get_states_rng(&mut self) -> (&mut StateMap, &mut StateMap, &mut StdRng) {
+        self.state = !self.state;
+        if self.state {
+            (&mut self.state_1, &mut self.state_0, &mut self.rng)
+        } else {
+            (&mut self.state_0, &mut self.state_1, &mut self.rng)
+        }
+    }
+
+    fn get_current_state_mut(&mut self) -> &mut StateMap {
         if self.state {
             &mut self.state_0
         } else {
             &mut self.state_1
+        }
+    }
+
+    fn get_current_state(&self) -> &StateMap {
+        if self.state {
+            &self.state_0
+        } else {
+            &self.state_1
         }
     }
 
@@ -64,6 +83,40 @@ impl Sparse {
             next_state.insert(state, amp);
         });
     }
+
+    fn dump_vec(&self, qubits: &[usize]) -> ket::DumpData {
+        let state = self.get_current_state();
+
+        let (basis_states, amplitudes_real, amplitudes_imag): (Vec<_>, Vec<_>, Vec<_>) = state
+            .iter()
+            .sorted_by_key(|x| x.0)
+            .map(|(state, amp)| {
+                let mut state: Vec<u64> = qubits
+                    .iter()
+                    .rev()
+                    .chunks(64)
+                    .into_iter()
+                    .map(|qubits| {
+                        qubits
+                            .into_iter()
+                            .enumerate()
+                            .map(|(index, qubit)| (is_one_at_vec(state, *qubit) as usize) << index)
+                            .reduce(|a, b| a | b)
+                            .unwrap_or(0) as u64
+                    })
+                    .collect();
+                state.reverse();
+
+                (state, amp.re, amp.im)
+            })
+            .multiunzip();
+
+        ket::DumpData::Vector {
+            basis_states,
+            amplitudes_real,
+            amplitudes_imag,
+        }
+    }
 }
 
 impl crate::QuantumExecution for Sparse {
@@ -83,10 +136,16 @@ impl crate::QuantumExecution for Sparse {
 
         state_0.insert(zero, Complex64::new(1.0, 0.0));
 
+        let seed = std::env::var("KBW_SEED")
+            .unwrap_or_default()
+            .parse::<u64>()
+            .unwrap_or_else(|_| rand::random());
+
         Ok(Sparse {
             state_0,
             state_1: StateMap::default(),
             state: true,
+            rng: StdRng::seed_from_u64(seed),
         })
     }
 
@@ -123,7 +182,7 @@ impl crate::QuantumExecution for Sparse {
     }
 
     fn pauli_z(&mut self, target: usize, control: &[usize]) {
-        let current_state = self.get_current_state();
+        let current_state = self.get_current_state_mut();
 
         current_state.par_iter_mut().for_each(|(state, amp)| {
             if ctrl_check_vec(state, control) && is_one_at_vec(state, target) {
@@ -176,7 +235,7 @@ impl crate::QuantumExecution for Sparse {
     }
 
     fn phase(&mut self, lambda: f64, target: usize, control: &[usize]) {
-        let current_state = self.get_current_state();
+        let current_state = self.get_current_state_mut();
 
         let phase = Complex64::exp(lambda * Complex64::i());
 
@@ -273,7 +332,7 @@ impl crate::QuantumExecution for Sparse {
     }
 
     fn rz(&mut self, theta: f64, target: usize, control: &[usize]) {
-        let current_state = self.get_current_state();
+        let current_state = self.get_current_state_mut();
 
         let phase_0 = Complex64::exp(-theta / 2.0 * Complex64::i());
         let phase_1 = Complex64::exp(theta / 2.0 * Complex64::i());
@@ -290,7 +349,7 @@ impl crate::QuantumExecution for Sparse {
     }
 
     fn measure(&mut self, target: usize) -> bool {
-        let (current_state, next_state) = self.get_states();
+        let (current_state, next_state, rng) = self.get_states_rng();
 
         let p1: f64 = current_state
             .iter()
@@ -308,10 +367,7 @@ impl crate::QuantumExecution for Sparse {
             _ => 0.0,
         };
 
-        let result = WeightedIndex::new([p0, p1])
-            .unwrap()
-            .sample(&mut thread_rng())
-            == 1;
+        let result = WeightedIndex::new([p0, p1]).unwrap().sample(rng) == 1;
 
         let p = 1.0 / f64::sqrt(if result { p1 } else { p0 });
 
@@ -325,38 +381,31 @@ impl crate::QuantumExecution for Sparse {
     }
 
     fn dump(&mut self, qubits: &[usize]) -> ket::DumpData {
-        let mut basis_states = Vec::new();
-        let mut amplitudes_real = Vec::new();
-        let mut amplitudes_imag = Vec::new();
+        let dump_type = std::env::var("KBW_DUMP_TYPE")
+            .unwrap_or("vector".to_string())
+            .to_lowercase();
 
-        let state = self.get_current_state();
+        let dump_type = if ["vector", "probability", "shots"].contains(&dump_type.as_str()) {
+            dump_type
+        } else {
+            "vector".to_string()
+        };
 
-        state.iter().for_each(|(state, amp)| {
-            let mut state: Vec<u64> = qubits
-                .iter()
-                .rev()
-                .chunks(64)
-                .into_iter()
-                .map(|qubits| {
-                    qubits
-                        .into_iter()
-                        .enumerate()
-                        .map(|(index, qubit)| (is_one_at_vec(state, *qubit) as usize) << index)
-                        .reduce(|a, b| a | b)
-                        .unwrap_or(0) as u64
-                })
-                .collect();
-            state.reverse();
+        if dump_type == "vector" {
+            self.dump_vec(qubits)
+        } else if dump_type == "probability" {
+            convert::from_dump_vec_to_dump_prob(self.dump_vec(qubits))
+        } else {
+            let shots = std::env::var("KBW_SHOTS")
+                .unwrap_or_default()
+                .parse::<u64>()
+                .unwrap_or(1024);
 
-            basis_states.push(state);
-            amplitudes_real.push(amp.re);
-            amplitudes_imag.push(amp.im);
-        });
-
-        ket::DumpData::Vector {
-            basis_states,
-            amplitudes_real,
-            amplitudes_imag,
+            convert::from_dump_prob_to_dump_shots(
+                convert::from_dump_vec_to_dump_prob(self.dump_vec(qubits)),
+                shots,
+                &mut self.rng,
+            )
         }
     }
 
@@ -481,6 +530,10 @@ mod tests {
 
     #[test]
     fn dump_h_3() {
+        std::env::set_var("KBW_DUMP_TYPE", "shoTs");
+        std::env::set_var("KBW_SHOTS", "1");
+        //std::env::set_var("KBW_SEED", "112");
+
         let mut p = Process::new(0);
         let q: Vec<Qubit> = (0..3)
             .into_iter()

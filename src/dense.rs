@@ -1,6 +1,7 @@
-use crate::bitwise::*;
 use crate::error::{KBWError, Result};
 use crate::quantum_execution::QuantumExecution;
+use crate::{bitwise::*, convert};
+use itertools::Itertools;
 use ket::ir::Metrics;
 use num::{complex::Complex64, Zero};
 use rand::distributions::WeightedIndex;
@@ -12,6 +13,7 @@ pub struct Dense {
     state_0: Vec<Complex64>,
     state_1: Vec<Complex64>,
     state: bool,
+    rng: StdRng,
 }
 
 impl Dense {
@@ -24,11 +26,20 @@ impl Dense {
         }
     }
 
-    fn get_current_state(&mut self) -> &mut [Complex64] {
+    fn get_states_rng(&mut self) -> (&mut [Complex64], &mut [Complex64], &mut StdRng) {
+        self.state = !self.state;
         if self.state {
-            &mut self.state_0
+            (&mut self.state_1, &mut self.state_0, &mut self.rng)
         } else {
-            &mut self.state_1
+            (&mut self.state_0, &mut self.state_1, &mut self.rng)
+        }
+    }
+
+    fn get_current_state(&self) -> &[Complex64] {
+        if self.state {
+            &self.state_0
+        } else {
+            &self.state_1
         }
     }
 
@@ -66,6 +77,32 @@ impl Dense {
                 *amp = current_state[a_b as usize];
             });
     }
+
+    fn dump_vec(&self, qubits: &[usize]) -> ket::DumpData {
+        let state = self.get_current_state();
+        let (basis_states, amplitudes_real, amplitudes_imag): (Vec<_>, Vec<_>, Vec<_>) = state
+            .iter()
+            .enumerate()
+            .filter(|(_state, amp)| amp.norm() > 1e-15)
+            .map(|(state, amp)| {
+                let state = qubits
+                    .iter()
+                    .rev()
+                    .enumerate()
+                    .map(|(index, qubit)| (is_one_at(state, *qubit) as usize) << index)
+                    .reduce(|a, b| a | b)
+                    .unwrap_or(0);
+
+                (Vec::from([state as u64]), amp.re, amp.im)
+            })
+            .multiunzip();
+
+        ket::DumpData::Vector {
+            basis_states,
+            amplitudes_real,
+            amplitudes_imag,
+        }
+    }
 }
 
 impl QuantumExecution for Dense {
@@ -88,10 +125,16 @@ impl QuantumExecution for Dense {
 
         state_0[0] = Complex64::new(1.0, 0.0);
 
+        let seed = std::env::var("KBW_SEED")
+            .unwrap_or_default()
+            .parse::<u64>()
+            .unwrap_or_else(|_| rand::random());
+
         Ok(Dense {
             state: true,
             state_0,
             state_1,
+            rng: StdRng::seed_from_u64(seed),
         })
     }
 
@@ -165,10 +208,10 @@ impl QuantumExecution for Dense {
             .for_each(|(state, amp)| {
                 if ctrl_check(state, control) {
                     *amp *= if is_one_at(state, target) {
-                            -FRAC_1_SQRT_2
-                        } else {
-                            FRAC_1_SQRT_2
-                        };
+                        -FRAC_1_SQRT_2
+                    } else {
+                        FRAC_1_SQRT_2
+                    };
                 }
             });
 
@@ -295,7 +338,7 @@ impl QuantumExecution for Dense {
     }
 
     fn measure(&mut self, target: usize) -> bool {
-        let (current_state, next_state) = self.get_states();
+        let (current_state, next_state, rng) = self.get_states_rng();
 
         let p1: f64 = current_state
             .par_iter()
@@ -314,10 +357,7 @@ impl QuantumExecution for Dense {
             _ => 0.0,
         };
 
-        let result = WeightedIndex::new([p0, p1])
-            .unwrap()
-            .sample(&mut thread_rng())
-            == 1;
+        let result = WeightedIndex::new([p0, p1]).unwrap().sample(rng) == 1;
 
         let p = 1.0 / f64::sqrt(if result { p1 } else { p0 });
 
@@ -336,34 +376,31 @@ impl QuantumExecution for Dense {
     }
 
     fn dump(&mut self, qubits: &[usize]) -> ket::DumpData {
-        let mut basis_states = Vec::new();
-        let mut amplitudes_real = Vec::new();
-        let mut amplitudes_imag = Vec::new();
+        let dump_type = std::env::var("KBW_DUMP_TYPE")
+            .unwrap_or("vector".to_string())
+            .to_lowercase();
 
-        let state = self.get_current_state();
+        let dump_type = if ["vector", "probability", "shots"].contains(&dump_type.as_str()) {
+            dump_type
+        } else {
+            "vector".to_string()
+        };
 
-        state
-            .iter()
-            .enumerate()
-            .filter(|(_state, amp)| amp.norm() > 1e-15)
-            .for_each(|(state, amp)| {
-                let state = qubits
-                    .iter()
-                    .rev()
-                    .enumerate()
-                    .map(|(index, qubit)| (is_one_at(state, *qubit) as usize) << index)
-                    .reduce(|a, b| a | b)
-                    .unwrap_or(0);
+        if dump_type == "vector" {
+            self.dump_vec(qubits)
+        } else if dump_type == "probability" {
+            convert::from_dump_vec_to_dump_prob(self.dump_vec(qubits))
+        } else {
+            let shots = std::env::var("KBW_SHOTS")
+                .unwrap_or_default()
+                .parse::<u64>()
+                .unwrap_or(1024);
 
-                basis_states.push(Vec::from([state as u64]));
-                amplitudes_real.push(amp.re);
-                amplitudes_imag.push(amp.im);
-            });
-
-        ket::DumpData::Vector {
-            basis_states,
-            amplitudes_real,
-            amplitudes_imag,
+            convert::from_dump_prob_to_dump_shots(
+                convert::from_dump_vec_to_dump_prob(self.dump_vec(qubits)),
+                shots,
+                &mut self.rng,
+            )
         }
     }
 
@@ -454,6 +491,9 @@ mod tests {
 
     #[test]
     fn dump_bell() {
+        std::env::set_var("KBW_DUMP_TYPE", "shoTs");
+        //std::env::set_var("KBW_SHOTS", "128");
+
         let (mut p, a, b) = bell();
         let d = p.dump(&[&a, &b]).unwrap();
 
@@ -541,6 +581,10 @@ mod tests {
 
     #[test]
     fn dump_h_3() {
+        std::env::set_var("KBW_DUMP_TYPE", "shoTs");
+        std::env::set_var("KBW_SHOTS", "1");
+        //std::env::set_var("KBW_SEED", "112");
+
         let mut p = Process::new(0);
         let q: Vec<Qubit> = (0..3)
             .into_iter()
