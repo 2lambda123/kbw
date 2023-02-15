@@ -36,12 +36,9 @@ pub fn run<S: QuantumExecution>(
     let mut qubit_stack_dirty = Vec::new();
     let mut qubit_map: Vec<usize> = (0..metrics.qubit_simultaneous).collect();
 
-    let mut int_register = Vec::with_capacity(metrics.future_count as usize);
-    for _ in 0..metrics.future_count {
-        int_register.push(0);
-    }
+    let mut int_register = vec![0; metrics.future_count];
 
-    let mut dump_register = Vec::with_capacity(metrics.dump_count as usize);
+    let mut dump_register = Vec::with_capacity(metrics.dump_count);
     for _ in 0..metrics.dump_count {
         dump_register.push(ket::DumpData::Probability {
             basis_states: Vec::new(),
@@ -52,10 +49,7 @@ pub fn run<S: QuantumExecution>(
     let mut current_block = 0usize;
 
     let qubit_vec_map = |control: &[usize], qubit_map: &[usize]| -> Vec<usize> {
-        control
-            .iter()
-            .map(|index| qubit_map[*index as usize])
-            .collect()
+        control.iter().map(|index| qubit_map[*index]).collect()
     };
 
     let start = Instant::now();
@@ -63,7 +57,7 @@ pub fn run<S: QuantumExecution>(
     'quantum_run: loop {
         for instruction in &quantum_code[current_block].instructions {
             if let Some(timeout) = metrics.timeout {
-                if start.elapsed().as_secs() > timeout as u64 {
+                if start.elapsed().as_secs() > timeout {
                     return Err(KBWError::Timeout);
                 }
             }
@@ -130,10 +124,10 @@ pub fn run<S: QuantumExecution>(
                     ),
                 },
                 Instruction::Measure { qubits, output } => {
-                    int_register[*output as usize] = qubits
+                    int_register[*output] = qubits
                         .iter()
                         .rev()
-                        .map(|qubit| qubit_map[*qubit as usize])
+                        .map(|qubit| qubit_map[*qubit])
                         .enumerate()
                         .map(|(index, qubit)| (sim.measure(qubit) as i64) << index)
                         .reduce(|a, b| a | b)
@@ -216,7 +210,7 @@ pub fn run<S: QuantumExecution>(
                     int_register[*result] = *value;
                 }
                 Instruction::Dump { qubits, output } => {
-                    dump_register[*output as usize] = sim.dump(&qubit_vec_map(qubits, &qubit_map));
+                    dump_register[*output] = sim.dump(&qubit_vec_map(qubits, &qubit_map));
                 }
             }
         }

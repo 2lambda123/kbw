@@ -74,7 +74,7 @@ impl crate::QuantumExecution for Sparse {
             }
         }
 
-        let num_states = ((metrics.qubit_simultaneous + 64) / 64) as usize;
+        let num_states = (metrics.qubit_simultaneous + 64) / 64;
 
         let mut state_0 = StateMap::default();
 
@@ -365,13 +365,11 @@ impl crate::QuantumExecution for Sparse {
         let mut swap_list = Vec::new();
 
         for (index, qubit) in target.iter().enumerate() {
-            if (*qubit as usize) == pos[index] {
+            if *qubit == pos[index] {
                 continue;
             };
             swap_list.push((index, pos[index]));
-            let tmp = pos[index];
-            pos[index] = pos[target[index]];
-            pos[target[index]] = tmp;
+            pos.swap(index, target[index]);
         }
 
         for (a, b) in swap_list.iter() {

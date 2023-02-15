@@ -41,7 +41,7 @@ pub extern "C" fn kbw_run_and_set_result(process: &mut Process, sim_mode: i32) -
 }
 
 #[no_mangle]
-pub extern "C" fn kbw_run_serialized(
+pub unsafe extern "C" fn kbw_run_serialized(
     quantum_code: *const u8,
     quantum_code_size: usize,
     metrics: *const u8,
@@ -114,7 +114,7 @@ pub extern "C" fn kbw_result_get(result: &Vec<u8>, data: &mut *const u8, size: &
 }
 
 #[no_mangle]
-pub extern "C" fn kbw_result_delete(result: *mut Vec<u8>) -> i32 {
+pub unsafe extern "C" fn kbw_result_delete(result: *mut Vec<u8>) -> i32 {
     unsafe { Box::from_raw(result) };
     KBWError::Success.error_code()
 }

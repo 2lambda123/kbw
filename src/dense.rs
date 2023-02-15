@@ -164,8 +164,7 @@ impl QuantumExecution for Dense {
             .enumerate()
             .for_each(|(state, amp)| {
                 if ctrl_check(state, control) {
-                    *amp = *amp
-                        * if is_one_at(state, target) {
+                    *amp *= if is_one_at(state, target) {
                             -FRAC_1_SQRT_2
                         } else {
                             FRAC_1_SQRT_2
@@ -220,7 +219,7 @@ impl QuantumExecution for Dense {
             .enumerate()
             .for_each(|(state, amp)| {
                 if ctrl_check(state, control) {
-                    *amp = *amp * cons_theta_2;
+                    *amp *= cons_theta_2;
                 }
             });
 
@@ -260,7 +259,7 @@ impl QuantumExecution for Dense {
             .enumerate()
             .for_each(|(state, amp)| {
                 if ctrl_check(state, control) {
-                    *amp = *amp * cons_theta_2;
+                    *amp *= cons_theta_2;
                 }
             });
 
@@ -373,13 +372,11 @@ impl QuantumExecution for Dense {
         let mut swap_list = Vec::new();
 
         for (index, qubit) in target.iter().enumerate() {
-            if (*qubit as usize) == pos[index] {
+            if *qubit == pos[index] {
                 continue;
             };
             swap_list.push((index, pos[index]));
-            let tmp = pos[index];
-            pos[index] = pos[target[index] as usize];
-            pos[target[index] as usize] = tmp;
+            pos.swap(index, target[index]);
         }
 
         for (a, b) in swap_list.iter() {
